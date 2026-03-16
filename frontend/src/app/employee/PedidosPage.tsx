@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { EmployeeSidebar } from '../components/EmployeeSidebar';
-import { EmployeeTopBar } from '../../components/EmployeeTopBar';
+import { EmployeeTopBar } from '../components/EmployeeTopBar';
 import { Plus, Eye, Trash2 } from 'lucide-react';
 
 const filters = ['Todos', 'Pendientes', 'En Preparación', 'Listos', 'Domicilios'];

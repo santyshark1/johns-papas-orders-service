@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { PublicNavbar } from './components/PublicNavbar';
-import { PublicFooter } from '../components/PublicFooter';
+import { PublicFooter } from './components/PublicFooter';
 
 const featuredPizzas = [
   {

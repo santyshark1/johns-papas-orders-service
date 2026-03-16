@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { EmployeeSidebar } from '../components/EmployeeSidebar';
-import { EmployeeTopBar } from '../../components/EmployeeTopBar';
+import { EmployeeTopBar } from '../components/EmployeeTopBar';
 import { Plus, Edit, Trash2, Search, User, X } from 'lucide-react';
 
 const employees = [

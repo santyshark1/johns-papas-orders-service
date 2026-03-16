@@ -1,4 +1,4 @@
-// File: /workspaces/johns-papas-orders-service/frontend/src/app/layout.tsx
+// File: /home/david/Documentos/GitHub/johns-papas-orders-service/frontend/src/app/layout.tsx
 import * as entry from '../../../src/app/layout.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

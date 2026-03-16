@@ -1,7 +1,7 @@
 'use client';
 
 import { EmployeeSidebar } from '../components/EmployeeSidebar';
-import { EmployeeTopBar } from '../../components/EmployeeTopBar';
+import { EmployeeTopBar } from '../components/EmployeeTopBar';
 import { FileText, Download } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 

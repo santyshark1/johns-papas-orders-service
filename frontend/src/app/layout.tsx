@@ -1,6 +1,7 @@
 import "../styles/index.css";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { AppProviders } from "@/shared/providers/AppProviders";
 
 export const metadata: Metadata = {
   title: "John's Papas",
@@ -14,7 +15,9 @@ type RootLayoutProps = {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="es">
-      <body>{children}</body>
+      <body>
+        <AppProviders>{children}</AppProviders>
+      </body>
     </html>
   );
 }

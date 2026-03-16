@@ -1,4 +1,14 @@
 {
-  "/page": "app/page.js",
-  "/menu/page": "app/menu/page.js"
+  "/menu/page": "app/menu/page.js",
+  "/login/page": "app/login/page.js",
+  "/puntos/page": "app/puntos/page.js",
+  "/employee/pedidos/page": "app/employee/pedidos/page.js",
+  "/employee/menu-admin/page": "app/employee/menu-admin/page.js",
+  "/employee/cajero/page": "app/employee/cajero/page.js",
+  "/employee/reportes/page": "app/employee/reportes/page.js",
+  "/pedidos/nuevo/page": "app/pedidos/nuevo/page.js",
+  "/employee/dashboard/page": "app/employee/dashboard/page.js",
+  "/employee/inventario/page": "app/employee/inventario/page.js",
+  "/employee/empleados/page": "app/employee/empleados/page.js",
+  "/page": "app/page.js"
 }
