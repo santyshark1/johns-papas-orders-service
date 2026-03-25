@@ -30,7 +30,6 @@ Sistema modular de gestión de órdenes/pedidos diseñado como microservicio reu
 - **Base de Datos**: PostgreSQL
 - **Autenticación**: JWT (Simple JWT)
 - **Validación**: Django Serializers + Pydantic
-- **Testing**: vitest
 - **Documentación**: drf-spectacular (Swagger/OpenAPI)
 
 ### Frontend
