@@ -1,6 +1,9 @@
-FROM node:18-alpine
+FROM node:20-alpine
 
 WORKDIR /app
+
+# Instalar dependencias del sistema 
+RUN apk add --no-cache libc6-compat
 
 # Copiar package.json
 COPY package*.json ./
@@ -14,8 +17,8 @@ COPY . .
 # Build
 RUN npm run build
 
-# Exponer puerto
+# Exponer puerto (Render usa variable PORT)
 EXPOSE 3000
 
-# Comando por defecto
-CMD ["npm", "run", "start"]
+# IMPORTANTE: usar el puerto dinámico de Render
+CMD ["sh", "-c", "npm run start -- -p $PORT"]
