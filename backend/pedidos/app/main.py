@@ -1,9 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.core.config import get_settings
-from app.db.database import Base, engine
-from usuario.app.routers.auth import router as auth
+from .core.config import get_settings
+from .db.database import Base, engine
+from .routers.pedidos import router as pedidos_router
 
 settings = get_settings()
 
@@ -15,7 +15,6 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
     allow_origins=[origin.strip() for origin in settings.cors_allowed_origins.split(",") if origin.strip()],
     allow_credentials=True,
     allow_methods=["*"],
@@ -32,5 +31,4 @@ def on_startup() -> None:
 def healthcheck() -> dict[str, str]:
     return {"status": "ok"}
 
-app.include_router(auth.router, prefix="/api")
 app.include_router(pedidos_router, prefix=settings.api_prefix)

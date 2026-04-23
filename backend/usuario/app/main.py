@@ -1,9 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.core.config import get_settings
-from app.db.database import Base, engine
-from backend.pedidos.app.routers.pedidos import router as pedidos_router
+from .core.config import get_settings
+from .db.database import Base, engine
+from .routers.auth import router as auth_router
 
 settings = get_settings()
 
@@ -32,4 +32,4 @@ def healthcheck() -> dict[str, str]:
     return {"status": "ok"}
 
 
-app.include_router(pedidos_router, prefix=settings.api_prefix)
+app.include_router(auth_router, prefix=settings.api_prefix)

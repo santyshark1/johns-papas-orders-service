@@ -2,9 +2,9 @@ from uuid import UUID
 
 from fastapi import APIRouter, status
 
-from app.deps import DBSession
-from app.schemas.schemas import MessageResponse, PedidoCreate, PedidoEstadoUpdate, PedidoRead, PedidoUpdate
-from app.services.pedido_service import (
+from ..deps import DBSession
+from ..schemas.schemas import MessageResponse, PedidoCreate, PedidoEstadoUpdate, PedidoRead, PedidoUpdate
+from ..services.pedido_service import (
     cancel_pedido,
     change_estado,
     create_pedido,

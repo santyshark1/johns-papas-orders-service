@@ -33,6 +33,9 @@ python manage.py createsuperuser
 
 # 7. Ejecutar servidor
 python manage.py runserver
+
+#nuevo 
+uvicorn main:app --reload
 ```
 
 El servidor estará disponible en: **http://localhost:8000**

@@ -5,7 +5,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator, model_validator
 
-from app.models.models import EntregaPedido, EstadoPedido, PlataformaPedido, TipoDireccion
+from ..models.models import EntregaPedido, EstadoPedido, PlataformaPedido, TipoDireccion
 
 
 PRECISION = Decimal("0.01")

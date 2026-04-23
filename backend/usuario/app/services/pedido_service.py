@@ -5,7 +5,7 @@ from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
-from app.models.models import (
+from ..models.models import (
     DireccionServicio,
     EstadoPedido,
     HistorialEstadoPedido,
@@ -13,7 +13,7 @@ from app.models.models import (
     OpcionSeleccionadaItemPedido,
     Pedido,
 )
-from app.schemas.schemas import PedidoCreate, PedidoEstadoUpdate, PedidoUpdate
+from ..schemas.schemas import PedidoCreate, PedidoEstadoUpdate, PedidoUpdate
 
 
 def _pedido_query():

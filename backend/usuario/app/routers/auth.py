@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.db.database import SessionLocal
-from app.models.models import Usuario
+from ..db.database import SessionLocal
+from ..models.models import Usuario
 from pydantic import BaseModel
 import jwt
 

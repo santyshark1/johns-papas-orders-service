@@ -7,7 +7,7 @@ from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, Numeric, St
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.database import Base
+from ..db.database import Base
 
 
 class EstadoPedido(str, enum.Enum):
@@ -36,6 +36,19 @@ class EntregaPedido(str, enum.Enum):
 class TipoDireccion(str, enum.Enum):
     DOMICILIO = "DOMICILIO"
     FACTURACION = "FACTURACION"
+
+
+class Usuario(Base):
+    __tablename__ = "usuarios"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    creado_en: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+
+    __table_args__ = (
+        Index("ix_usuarios_email", "email"),
+    )
 
 
 class Pedido(Base):

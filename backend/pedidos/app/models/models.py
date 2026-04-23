@@ -7,7 +7,7 @@ from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, Numeric, St
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.database import Base
+from ..db.database import Base
 
 
 class EstadoPedido(str, enum.Enum):
