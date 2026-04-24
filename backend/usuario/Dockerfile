@@ -1,26 +1,23 @@
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 WORKDIR /app
 
-# Instalar dependencias del sistema
-RUN apt-get update && apt-get install -y \
-    postgresql-client \
+# Instalar dependencias del sistema (opcional, útil para algunas librerías)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
     && rm -rf /var/lib/apt/lists/*
 
-# Copiar requirements
+# Copiar requirements primero (mejor caché de Docker)
 COPY requirements.txt .
 
-# Instalar dependencias Python
+# Instalar dependencias de Python
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copiar código
-COPY . .
+# Copiar el resto del código
+COPY ./app ./app
 
-# Crear carpetas necesarias
-RUN mkdir -p logs
-
-# Exponer puerto
+# Exponer puerto (Render usará el PORT dinámico, pero lo dejamos fijo)
 EXPOSE 8000
 
-# Comando por defecto
+# Comando para ejecutar la aplicación
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

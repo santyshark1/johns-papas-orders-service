@@ -1,35 +1,41 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .core.config import get_settings
-from .db.database import Base, engine
-from .routers.auth import router as auth_router
+from app.routers.auth import router as auth_router
+from app.routers.roles import router as roles_router
+from app.routers.usuarios import router as usuarios_router
 
-settings = get_settings()
 
 app = FastAPI(
-    title=settings.app_name,
-    debug=settings.debug,
+    title="Usuario Service",
+    description="Microservicio de gestion de usuarios, autenticacion y roles",
     version="1.0.0",
 )
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[origin.strip() for origin in settings.cors_allowed_origins.split(",") if origin.strip()],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
-@app.on_event("startup")
-def on_startup() -> None:
-    Base.metadata.create_all(bind=engine)
+@app.get("/")
+def root() -> dict[str, str]:
+    return {
+        "service": "usuario",
+        "status": "running",
+        "version": "1.0.0",
+    }
 
 
 @app.get("/health")
 def healthcheck() -> dict[str, str]:
-    return {"status": "ok"}
+    return {"status": "ok", "service": "usuario"}
 
 
-app.include_router(auth_router, prefix=settings.api_prefix)
+# Los routers ya incluyen su prefix internamente.
+app.include_router(auth_router)
+app.include_router(usuarios_router)
+app.include_router(roles_router)
