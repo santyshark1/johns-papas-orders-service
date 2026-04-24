@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  usuario:
+    build: ./usuario
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - DEFAULT_TIENDA_ID=${DEFAULT_TIENDA_ID}
+    networks:
+      - eps-network
+
+  pedidos:
+    build: ./pedidos
+    ports:
+      - "8001:8001"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - USUARIO_SERVICE_URL=http://usuario:8000
+      - INVENTARIO_SERVICE_URL=http://inventario:8002
+    depends_on:
+      - usuario
+      - inventario
+    networks:
+      - eps-network
+
+  inventario:
+    build: ./inventario
+    ports:
+      - "8002:8002"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+    networks:
+      - eps-network
+
+  reportes:
+    build: ./reportes
+    ports:
+      - "8003:8003"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+    depends_on:
+      - usuario
+    networks:
+      - eps-network
+
+networks:
+  eps-network:
+    driver: bridge
