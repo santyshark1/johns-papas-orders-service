@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .core.config import get_settings
 from .db.database import Base, engine
-from .routers.pedidos import router as pedidos_router
+from .routers.auth import router as auth_router
 
 settings = get_settings()
 
@@ -31,4 +31,5 @@ def on_startup() -> None:
 def healthcheck() -> dict[str, str]:
     return {"status": "ok"}
 
-app.include_router(pedidos_router, prefix=settings.api_prefix)
+
+app.include_router(auth_router, prefix=settings.api_prefix)
