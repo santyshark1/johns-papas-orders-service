@@ -1,26 +1,23 @@
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 WORKDIR /app
 
 # Instalar dependencias del sistema
-RUN apt-get update && apt-get install -y \
-    postgresql-client \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
     && rm -rf /var/lib/apt/lists/*
 
-# Copiar requirements
+# Copiar requirements primero (mejor caché de Docker)
 COPY requirements.txt .
 
-# Instalar dependencias Python
+# Instalar dependencias de Python
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copiar código
-COPY . .
-
-# Crear carpetas necesarias
-RUN mkdir -p logs
+# Copiar el resto del código
+COPY ./app ./app
 
 # Exponer puerto
-EXPOSE 8000
+EXPOSE 8001
 
-# Comando por defecto
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Comando para ejecutar la aplicación
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8001"]
