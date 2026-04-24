@@ -19,8 +19,8 @@ services:
     environment:
       - DATABASE_URL=${DATABASE_URL}
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
-      - USUARIO_SERVICE_URL=http://usuario:8000
-      - INVENTARIO_SERVICE_URL=http://inventario:8002
+      - USUARIO_SERVICE_URL={USUARIO_SERVICE_URL}
+      - INVENTARIO_SERVICE_URL={INVENTARIO_SERVICE_URL}
     depends_on:
       - usuario
       - inventario
