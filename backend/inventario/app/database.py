@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from collections.abc import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
@@ -32,7 +33,7 @@ AsyncSessionLocal = sessionmaker(
 )
 
 
-async def get_db() -> AsyncSession:
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
 	"""Entrega una sesion asinc para operaciones con la BD."""
 	async with AsyncSessionLocal() as session:
 		yield session

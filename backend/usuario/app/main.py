@@ -7,6 +7,8 @@ from fastapi import FastAPI, Request
 from fastapi.responses import Response
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.database import DATABASE_URL, engine
+from app.models import Base
 from app.routers.auth import router as auth_router
 from app.routers.roles import router as roles_router
 from app.routers.usuarios import router as usuarios_router
@@ -84,3 +86,10 @@ def healthcheck() -> dict[str, str]:
 app.include_router(auth_router)
 app.include_router(usuarios_router)
 app.include_router(roles_router)
+
+
+@app.on_event("startup")
+async def startup() -> None:
+    if DATABASE_URL.startswith("sqlite+"):
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)

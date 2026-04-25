@@ -1,21 +1,17 @@
 from __future__ import annotations
 
-import re
 from datetime import datetime
 from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field, ValidationInfo, field_validator
 
 
-PASSWORD_REGEX = re.compile(r"^(?=.*[A-Z])(?=.*\d).+$")
-
-
 # Esquema de entrada para registro de usuarios.
 class UsuarioRegister(BaseModel):
 	nombre: str = Field(min_length=2, max_length=100)
 	email: EmailStr
-	password: str = Field(min_length=8)
-	confirm_password: str
+	password: str = Field(min_length=6)
+	confirm_password: str | None = None
 
 	@field_validator("email", mode="before")
 	@classmethod
@@ -23,18 +19,12 @@ class UsuarioRegister(BaseModel):
 		# Normaliza el correo a minusculas.
 		return value.strip().lower()
 
-	@field_validator("password")
-	@classmethod
-	def validate_password_strength(cls, value: str) -> str:
-		# Requiere al menos una mayuscula y un numero.
-		if not PASSWORD_REGEX.match(value):
-			raise ValueError("La contrasena debe tener al menos una mayuscula y un numero")
-		return value
-
 	@field_validator("confirm_password")
 	@classmethod
-	def validate_confirm_password(cls, value: str, info: ValidationInfo) -> str:
+	def validate_confirm_password(cls, value: str | None, info: ValidationInfo) -> str | None:
 		# Valida que la confirmacion coincida con la contrasena.
+		if value is None:
+			return value
 		password = info.data.get("password")
 		if password is not None and value != password:
 			raise ValueError("Las contrasenas no coinciden")
@@ -46,8 +36,8 @@ class UsuarioRegister(BaseModel):
 				{
 					"nombre": "Juan Perez",
 					"email": "juan@example.com",
-					"password": "Password1",
-					"confirm_password": "Password1",
+					"password": "123456",
+					"confirm_password": "123456",
 				}
 			]
 		}
