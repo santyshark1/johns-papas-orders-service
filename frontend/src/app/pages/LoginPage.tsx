@@ -77,7 +77,6 @@ export function LoginPage() {
           >
             Ingresar
           </button>
-
           <div className="text-center">
             <a href="#" className="text-sm text-[#8B6F47] hover:text-[#D4A017] transition">
               ¿Olvidaste tu contraseña?
