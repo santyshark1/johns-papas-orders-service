@@ -20,7 +20,7 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 REFRESH_TOKEN_EXPIRE_DAYS = 7
 
-_pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=12)
+_pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
 
 def _get_jwt_secret_key() -> str:
@@ -119,8 +119,9 @@ async def register_user(db: AsyncSession, user_data: UsuarioRegister) -> Usuario
             pass
 
     await db.commit()
-    await db.refresh(usuario)
-    return usuario
+
+    usuario_con_roles = await get_user_by_id(db, usuario.id)
+    return usuario_con_roles or usuario
 
 
 # Autentica un usuario con email y contrasena.

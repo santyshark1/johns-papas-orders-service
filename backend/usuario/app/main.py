@@ -90,5 +90,13 @@ app.include_router(roles_router)
 
 @app.on_event("startup")
 async def startup() -> None:
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    auto_create_tables = os.getenv("AUTO_CREATE_TABLES", "false").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
+
+    if DATABASE_URL.startswith("sqlite+") or auto_create_tables:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
