@@ -90,6 +90,5 @@ app.include_router(roles_router)
 
 @app.on_event("startup")
 async def startup() -> None:
-    if DATABASE_URL.startswith("sqlite+"):
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
