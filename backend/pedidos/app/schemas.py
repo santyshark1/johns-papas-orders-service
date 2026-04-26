@@ -224,15 +224,15 @@ class ItemPedidoResponse(BaseModel):
 	# Nombre del producto en snapshot.
 	nombre_producto_snapshot: str
 	# SKU del producto en snapshot.
-	sku_producto_snapshot: str
+	sku_producto_snapshot: str | None = None
 	# Impuesto calculado para el item.
 	impuesto_item: float
 	# Descuento aplicado al item.
 	descuento_item: float
 	# Variantes seleccionadas del item.
-	variantes_json: dict
+	variantes_json: dict | None = None
 	# Notas adicionales del item.
-	notas: str
+	notas: str | None = None
 	# Opciones seleccionadas del item.
 	opciones_seleccionadas: list[OpcionSeleccionadaResponse]
 
