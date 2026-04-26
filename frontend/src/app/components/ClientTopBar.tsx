@@ -4,9 +4,11 @@ import { useEffect, useState } from 'react';
 import { User } from 'lucide-react';
 import { jwtDecode } from 'jwt-decode';
 
-interface TokenPayload {
-  nombre?: string;
+interface JwtPayload {
   sub?: string;
+  nombre?: string;
+  email?: string;
+  [key: string]: unknown;
 }
 
 export function ClientTopBar() {
@@ -16,8 +18,8 @@ export function ClientTopBar() {
     const token = localStorage.getItem('token');
     if (!token) return;
     try {
-      const payload = jwtDecode<TokenPayload>(token);
-      setNombre(payload.nombre ?? payload.sub ?? null);
+      const payload = jwtDecode<JwtPayload>(token);
+      setNombre(payload.nombre ?? payload.email ?? null);
     } catch {
       // token inválido
     }

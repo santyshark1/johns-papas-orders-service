@@ -14,7 +14,9 @@ import {
   Menu,
   X
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
+const PEDIDOS_API = 'https://pedidos-service-bwn3.onrender.com';
 
 const menuItems = [
   { path: '/employee/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -29,6 +31,21 @@ const menuItems = [
 export function EmployeeSidebar() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    fetch(`${PEDIDOS_API}/pedidos`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+      .then(r => (r.ok ? r.json() : null))
+      .then(data => {
+        if (!data) return;
+        const arr: { estado?: string }[] = Array.isArray(data) ? data : (data.items ?? data.data ?? []);
+        setPendingCount(arr.filter(o => o.estado?.toUpperCase() === 'PENDIENTE').length);
+      })
+      .catch(() => {});
+  }, []);
 
   const SidebarContent = () => (
     <>
@@ -53,7 +70,12 @@ export function EmployeeSidebar() {
               }`}
             >
               <Icon size={20} className="mr-3" />
-              <span className="text-sm">{item.label}</span>
+              <span className="text-sm flex-1">{item.label}</span>
+              {item.path === '/employee/pedidos' && pendingCount > 0 && (
+                <span className="bg-red-500 text-white text-xs rounded-full min-w-[20px] h-5 flex items-center justify-center px-1 font-bold">
+                  {pendingCount > 99 ? '99+' : pendingCount}
+                </span>
+              )}
             </Link>
           );
         })}

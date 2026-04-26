@@ -1,28 +1,107 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { DollarSign, ClipboardList, Clock } from 'lucide-react';
 import { ClientSidebar } from '../../components/ClientSidebar';
 import { ClientTopBar } from '../../components/ClientTopBar';
+import { jwtDecode } from 'jwt-decode';
 
-const kpis = [
-  { label: 'Total invertido', value: '$320.000', icon: DollarSign, color: 'bg-green-500' },
-  { label: 'Pedidos realizados', value: '12', icon: ClipboardList, color: 'bg-blue-500' },
-  { label: 'Último pedido', value: 'Hace 2 días', icon: Clock, color: 'bg-orange-500' }
-];
+interface JwtPayload {
+  sub?: string;
+  nombre?: string;
+  email?: string;
+  [key: string]: unknown;
+}
 
-const recentOrders = [
-  { id: '#CL-122', fecha: '20/04/2026', total: '$58.000', estado: 'Entregado' },
-  { id: '#CL-118', fecha: '18/04/2026', total: '$42.000', estado: 'En preparación' },
-  { id: '#CL-110', fecha: '15/04/2026', total: '$74.000', estado: 'Listo' }
-];
+interface OrderItem {
+  precio_unitario_snapshot: number;
+  cantidad: number;
+  descuento_item?: number;
+}
+
+interface Order {
+  id?: string;
+  cliente_id: string;
+  fecha_creacion?: string;
+  created_at?: string;
+  total?: number;
+  items: OrderItem[];
+  estado?: string;
+}
 
 const statusColors: Record<string, string> = {
-  Entregado: 'bg-green-100 text-green-800',
-  'En preparación': 'bg-orange-100 text-orange-800',
-  Listo: 'bg-yellow-100 text-yellow-800'
+  entregado: 'bg-green-100 text-green-800',
+  en_preparacion: 'bg-orange-100 text-orange-800',
+  listo: 'bg-yellow-100 text-yellow-800',
+  pendiente: 'bg-blue-100 text-blue-800',
 };
 
+function calcTotal(order: Order): number {
+  if (order.total != null) return order.total;
+  return order.items.reduce((sum, item) => {
+    return sum + item.precio_unitario_snapshot * item.cantidad * (1 - (item.descuento_item ?? 0));
+  }, 0);
+}
+
+function formatCOP(value: number): string {
+  return '$' + Math.round(value).toLocaleString('es-CO');
+}
+
+function formatFecha(dateStr?: string): string {
+  if (!dateStr) return '—';
+  return new Date(dateStr).toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+function tiempoDesde(dateStr?: string): string {
+  if (!dateStr) return '—';
+  const days = Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000);
+  if (days === 0) return 'Hoy';
+  if (days === 1) return 'Hace 1 día';
+  return `Hace ${days} días`;
+}
+
 export function DashboardClientPage() {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      const token = localStorage.getItem('token');
+      if (!token) { setLoading(false); return; }
+
+      let clienteId: string | undefined;
+      try {
+        clienteId = jwtDecode<JwtPayload>(token).sub;
+      } catch { setLoading(false); return; }
+      if (!clienteId) { setLoading(false); return; }
+
+      const res = await fetch(
+        `https://pedidos-service-bwn3.onrender.com/pedidos?cliente_id=${clienteId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      ).catch(() => null);
+
+      if (res?.ok) {
+        const json = await res.json();
+        setOrders(Array.isArray(json) ? json : (json.items ?? json.data ?? []));
+      }
+      setLoading(false);
+    }
+    load();
+  }, []);
+
+  const sorted = orders
+    .slice()
+    .sort((a, b) => new Date(b.fecha_creacion ?? b.created_at ?? 0).getTime() - new Date(a.fecha_creacion ?? a.created_at ?? 0).getTime());
+
+  const totalInvertido = orders.reduce((sum, o) => sum + calcTotal(o), 0);
+  const lastOrder = sorted[0];
+
+  const kpis = [
+    { label: 'Total invertido', value: loading ? '...' : formatCOP(totalInvertido), icon: DollarSign, color: 'bg-green-500' },
+    { label: 'Pedidos realizados', value: loading ? '...' : String(orders.length), icon: ClipboardList, color: 'bg-blue-500' },
+    { label: 'Último pedido', value: loading ? '...' : tiempoDesde(lastOrder?.fecha_creacion ?? lastOrder?.created_at), icon: Clock, color: 'bg-orange-500' },
+  ];
+
   return (
     <div className="flex min-h-screen bg-[#FDF6EC]">
       <ClientSidebar />
@@ -69,14 +148,20 @@ export function DashboardClientPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {recentOrders.map((order) => (
-                    <tr key={order.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-[#5C3D1E]">{order.id}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-[#5C3D1E]">{order.fecha}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-[#5C3D1E]">{order.total}</td>
+                  {loading && (
+                    <tr><td colSpan={4} className="px-6 py-4 text-sm text-center text-[#8B6F47]">Cargando...</td></tr>
+                  )}
+                  {!loading && sorted.length === 0 && (
+                    <tr><td colSpan={4} className="px-6 py-4 text-sm text-center text-[#8B6F47]">Sin pedidos</td></tr>
+                  )}
+                  {sorted.slice(0, 10).map((order, i) => (
+                    <tr key={order.id ?? i}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-[#5C3D1E]">#{(order.id ?? '—').slice(0, 8).toUpperCase()}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-[#5C3D1E]">{formatFecha(order.fecha_creacion ?? order.created_at)}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-[#5C3D1E]">{formatCOP(calcTotal(order))}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-3 py-1 rounded-full text-xs ${statusColors[order.estado]}`}>
-                          {order.estado}
+                        <span className={`px-3 py-1 rounded-full text-xs ${statusColors[order.estado?.toLowerCase() ?? ''] ?? 'bg-gray-100 text-gray-800'}`}>
+                          {order.estado ?? '—'}
                         </span>
                       </td>
                     </tr>
