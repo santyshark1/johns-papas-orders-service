@@ -263,17 +263,25 @@ async def listar_pedidos(
 ) -> list[PedidoResponse]:
 	"""Lista los pedidos del usuario autenticado."""
 	cliente_uuid = _parse_user_id(current_user_id)
-	result = await session.execute(
-		select(Pedido)
-		.where(Pedido.cliente_id == cliente_uuid)
-		.order_by(Pedido.creado_en.desc())
-		.options(
-			selectinload(Pedido.items).selectinload(ItemPedido.opciones_seleccionadas),
-			selectinload(Pedido.direcciones_servicio),
+	try:
+		result = await session.execute(
+			select(Pedido)
+			.where(Pedido.cliente_id == cliente_uuid)
+			.order_by(Pedido.creado_en.desc())
+			.options(
+				selectinload(Pedido.items).selectinload(ItemPedido.opciones_seleccionadas),
+				selectinload(Pedido.direcciones_servicio),
+			)
 		)
-	)
-	pedidos: Iterable[Pedido] = result.scalars().all()
-	return [_build_pedido_response(pedido) for pedido in pedidos]
+		pedidos: Iterable[Pedido] = result.scalars().all()
+		return [_build_pedido_response(pedido) for pedido in pedidos]
+	except HTTPException:
+		raise
+	except Exception as exc:
+		raise HTTPException(
+			status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+			detail="Error al obtener los pedidos. Intenta de nuevo.",
+		) from exc
 
 
 @router.get("/{pedido_id}", response_model=PedidoResponse)

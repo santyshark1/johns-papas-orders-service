@@ -64,31 +64,35 @@ function tiempoDesde(dateStr?: string): string {
 export function DashboardClientPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  useEffect(() => {
-    async function load() {
-      const token = localStorage.getItem('token');
-      if (!token) { setLoading(false); return; }
+  async function loadOrders() {
+    setLoading(true);
+    setError('');
+    const token = localStorage.getItem('token');
+    if (!token) { setLoading(false); return; }
 
-      let clienteId: string | undefined;
-      try {
-        clienteId = jwtDecode<JwtPayload>(token).sub;
-      } catch { setLoading(false); return; }
-      if (!clienteId) { setLoading(false); return; }
+    let clienteId: string | undefined;
+    try {
+      clienteId = jwtDecode<JwtPayload>(token).sub;
+    } catch { setLoading(false); return; }
+    if (!clienteId) { setLoading(false); return; }
 
-      const res = await fetch(
-        `/api-proxy/pedidos-svc/pedidos?cliente_id=${clienteId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      ).catch(() => null);
+    const res = await fetch(
+      `/api-proxy/pedidos-svc/pedidos`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    ).catch(() => null);
 
-      if (res?.ok) {
-        const json = await res.json();
-        setOrders(Array.isArray(json) ? json : (json.items ?? json.data ?? []));
-      }
-      setLoading(false);
+    if (res?.ok) {
+      const json = await res.json();
+      setOrders(Array.isArray(json) ? json : (json.items ?? json.data ?? []));
+    } else {
+      setError('No se pudieron cargar los pedidos. El servicio puede estar iniciando.');
     }
-    load();
-  }, []);
+    setLoading(false);
+  }
+
+  useEffect(() => { loadOrders(); }, []);
 
   const sorted = orders
     .slice()
@@ -114,6 +118,18 @@ export function DashboardClientPage() {
           <h2 className="text-2xl md:text-3xl mb-6 text-[#5C3D1E]" style={{ fontFamily: 'Playfair Display, serif' }}>
             Dashboard Cliente
           </h2>
+
+          {error && (
+            <div className="mb-6 flex items-center justify-between bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">
+              <span>{error}</span>
+              <button
+                onClick={loadOrders}
+                className="ml-4 px-3 py-1 bg-red-100 hover:bg-red-200 rounded text-xs font-medium transition"
+              >
+                Reintentar
+              </button>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             {kpis.map((kpi) => {
