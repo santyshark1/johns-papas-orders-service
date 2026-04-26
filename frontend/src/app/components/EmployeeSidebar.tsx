@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
-const PEDIDOS_API = 'https://pedidos-service-bwn3.onrender.com';
+const PEDIDOS_API = '/api-proxy/pedidos-svc';
 
 const menuItems = [
   { path: '/employee/dashboard', label: 'Dashboard', icon: LayoutDashboard },

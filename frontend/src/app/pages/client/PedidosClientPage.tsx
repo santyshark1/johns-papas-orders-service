@@ -13,7 +13,7 @@ interface JwtPayload {
   [key: string]: unknown;
 }
 
-const PEDIDOS_API = 'https://pedidos-service-bwn3.onrender.com';
+const PEDIDOS_API = '/api-proxy/pedidos-svc';
 
 const STAGES = ['PENDIENTE', 'EN_PREPARACION', 'LISTO', 'ENTREGADO'];
 

@@ -76,7 +76,7 @@ export function DashboardClientPage() {
       if (!clienteId) { setLoading(false); return; }
 
       const res = await fetch(
-        `https://pedidos-service-bwn3.onrender.com/pedidos?cliente_id=${clienteId}`,
+        `/api-proxy/pedidos-svc/pedidos?cliente_id=${clienteId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       ).catch(() => null);
 
