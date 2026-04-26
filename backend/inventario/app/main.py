@@ -49,19 +49,11 @@ _cors_origin_pattern = re.compile(
 @app.middleware("http")
 async def ensure_cors_headers(request: Request, call_next):
 	origin = request.headers.get("origin")
-
-	if request.method == "OPTIONS":
-		response = Response(status_code=200)
-	else:
-		response = await call_next(request)
-
-	if origin and _cors_origin_pattern.match(origin):
+	response = await call_next(request)
+	if origin and _cors_origin_pattern.match(origin) and "access-control-allow-origin" not in response.headers:
 		response.headers["Access-Control-Allow-Origin"] = origin
 		response.headers["Access-Control-Allow-Credentials"] = "true"
-		response.headers["Access-Control-Allow-Methods"] = "*"
-		response.headers["Access-Control-Allow-Headers"] = "*"
 		response.headers["Vary"] = "Origin"
-
 	return response
 
 
