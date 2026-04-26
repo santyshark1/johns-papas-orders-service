@@ -22,6 +22,7 @@ interface OrderItem {
 interface Order {
   id?: string;
   cliente_id: string;
+  creado_en?: string;
   fecha_creacion?: string;
   created_at?: string;
   total?: number;
@@ -91,7 +92,7 @@ export function DashboardClientPage() {
 
   const sorted = orders
     .slice()
-    .sort((a, b) => new Date(b.fecha_creacion ?? b.created_at ?? 0).getTime() - new Date(a.fecha_creacion ?? a.created_at ?? 0).getTime());
+    .sort((a, b) => new Date(b.creado_en ?? b.fecha_creacion ?? b.created_at ?? 0).getTime() - new Date(a.creado_en ?? a.fecha_creacion ?? a.created_at ?? 0).getTime());
 
   const totalInvertido = orders.reduce((sum, o) => sum + calcTotal(o), 0);
   const lastOrder = sorted[0];
@@ -99,7 +100,7 @@ export function DashboardClientPage() {
   const kpis = [
     { label: 'Total invertido', value: loading ? '...' : formatCOP(totalInvertido), icon: DollarSign, color: 'bg-green-500' },
     { label: 'Pedidos realizados', value: loading ? '...' : String(orders.length), icon: ClipboardList, color: 'bg-blue-500' },
-    { label: 'Último pedido', value: loading ? '...' : tiempoDesde(lastOrder?.fecha_creacion ?? lastOrder?.created_at), icon: Clock, color: 'bg-orange-500' },
+    { label: 'Último pedido', value: loading ? '...' : tiempoDesde(lastOrder?.creado_en ?? lastOrder?.fecha_creacion ?? lastOrder?.created_at), icon: Clock, color: 'bg-orange-500' },
   ];
 
   return (
@@ -157,7 +158,7 @@ export function DashboardClientPage() {
                   {sorted.slice(0, 10).map((order, i) => (
                     <tr key={order.id ?? i}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-[#5C3D1E]">#{(order.id ?? '—').slice(0, 8).toUpperCase()}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-[#5C3D1E]">{formatFecha(order.fecha_creacion ?? order.created_at)}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-[#5C3D1E]">{formatFecha(order.creado_en ?? order.fecha_creacion ?? order.created_at)}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-[#5C3D1E]">{formatCOP(calcTotal(order))}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-3 py-1 rounded-full text-xs ${statusColors[order.estado?.toLowerCase() ?? ''] ?? 'bg-gray-100 text-gray-800'}`}>

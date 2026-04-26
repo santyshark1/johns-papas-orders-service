@@ -58,6 +58,7 @@ interface OrderItem {
 interface Order {
   id: string;
   cliente_id: string;
+  creado_en?: string;
   fecha_creacion?: string;
   created_at?: string;
   total?: number;
@@ -220,7 +221,7 @@ function OrderModal({ order, token, onClose, onCancelled }: {
           )}
 
           <p className="text-xs text-[#8B6F47] mb-4">
-            Fecha: {formatFecha(currentOrder.fecha_creacion ?? currentOrder.created_at)}
+            Fecha: {formatFecha(currentOrder.creado_en ?? currentOrder.fecha_creacion ?? currentOrder.created_at)}
           </p>
 
           {canCancel && !showCancel && (
@@ -305,8 +306,8 @@ export function PedidosClientPage() {
     .slice()
     .sort(
       (a, b) =>
-        new Date(b.fecha_creacion ?? b.created_at ?? 0).getTime() -
-        new Date(a.fecha_creacion ?? a.created_at ?? 0).getTime()
+        new Date(b.creado_en ?? b.fecha_creacion ?? b.created_at ?? 0).getTime() -
+        new Date(a.creado_en ?? a.fecha_creacion ?? a.created_at ?? 0).getTime()
     );
 
   function handleCancelled(id: string) {
@@ -375,7 +376,7 @@ export function PedidosClientPage() {
                         #{(order.id ?? '—').slice(0, 8).toUpperCase()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-[#5C3D1E]">
-                        {formatFecha(order.fecha_creacion ?? order.created_at)}
+                        {formatFecha(order.creado_en ?? order.fecha_creacion ?? order.created_at)}
                       </td>
                       <td className="px-6 py-4 text-sm text-[#5C3D1E]">
                         {order.items.slice(0, 2).map((it, j) => (
