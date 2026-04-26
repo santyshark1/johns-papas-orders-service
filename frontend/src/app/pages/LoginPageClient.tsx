@@ -31,6 +31,7 @@ export function LoginPageClient() {
       const data = await res.json();
       if (data.access_token) {
         localStorage.setItem('token', data.access_token);
+        localStorage.setItem('userEmail', email);
       }
       router.push('/clients/dashboard');
     } catch {

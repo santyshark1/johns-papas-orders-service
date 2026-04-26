@@ -119,17 +119,24 @@ function OrderModal({ order, token, onClose, onCancelled }: {
     if (!razon.trim()) { setCancelError('Ingresa una razón'); return; }
     setCancelling(true);
     setCancelError('');
-    const res = await fetch(`${PEDIDOS_API}/pedidos/${order.id}/cancelar`, {
+    const cancelUrl = `${PEDIDOS_API}/pedidos/${order.id}/cancelar?razon=${encodeURIComponent(razon)}`;
+    const res = await fetch(cancelUrl, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ id: order.id, razon }),
+      headers: { Authorization: `Bearer ${token}` },
     }).catch(() => null);
     if (res?.ok) {
       onCancelled(order.id);
       onClose();
     } else {
       const err = await res?.json().catch(() => null);
-      setCancelError(err?.detail ?? 'Error al cancelar');
+      const detail = err?.detail;
+      setCancelError(
+        typeof detail === 'string'
+          ? detail
+          : Array.isArray(detail)
+            ? detail.map((e: { msg?: string }) => e.msg ?? '').join(', ')
+            : 'Error al cancelar'
+      );
     }
     setCancelling(false);
   }

@@ -146,7 +146,7 @@ function ConfirmModal({ cart, onClose, onSuccess }: {
     try { decoded = jwtDecode<JwtPayload>(token); } catch { setError('Sesión expirada'); setSubmitting(false); return; }
 
     const payload = {
-      cliente_email: decoded.email ?? '',
+      cliente_email: decoded.email ?? localStorage.getItem('userEmail') ?? '',
       cliente_id: decoded.sub ?? '',
       cliente_nombre: decoded.nombre ?? '',
       cliente_telefono: form.telefono,
@@ -185,7 +185,14 @@ function ConfirmModal({ cart, onClose, onSuccess }: {
       onSuccess();
     } else {
       const err = await res?.json().catch(() => null);
-      setError(err?.detail ?? `Error ${res?.status ?? ''} al crear el pedido`);
+      const detail = err?.detail;
+      setError(
+        typeof detail === 'string'
+          ? detail
+          : Array.isArray(detail)
+            ? detail.map((e: { msg?: string }) => e.msg ?? '').join(', ')
+            : `Error ${res?.status ?? ''} al crear el pedido`
+      );
     }
     setSubmitting(false);
   }
