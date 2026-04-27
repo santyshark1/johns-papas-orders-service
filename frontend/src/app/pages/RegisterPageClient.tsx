@@ -16,6 +16,13 @@ interface JwtPayload {
   [key: string]: unknown;
 }
 
+type UsuarioApiResponse = {
+  id?: string;
+  nombre?: string | null;
+  email?: string | null;
+  roles?: string[];
+};
+
 export function RegisterPageClient() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -47,32 +54,66 @@ export function RegisterPageClient() {
         setError(body?.detail ?? 'Error al registrar, intenta de nuevo');
         return;
       }
-      const data = await res.json().catch(() => ({}));
+      const registerResponse = (await res.json().catch(() => ({}))) as UsuarioApiResponse;
 
-      const payload = data.access_token ? jwtDecode<JwtPayload>(data.access_token) : null;
-      const userData = {
-        id: data.id ?? data.usuario?.id ?? payload?.sub ?? '',
-        nombre: data.nombre ?? data.usuario?.nombre ?? payload?.nombre ?? nombre,
-        email: data.email ?? data.usuario?.email ?? payload?.email ?? email,
-        roles: data.roles ?? data.usuario?.roles ?? payload?.roles ?? [],
+      // El endpoint de registro solo devuelve el usuario, así que hacemos login automático.
+      const loginRes = await fetch('https://usuario-service-7rbo.onrender.com/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', accept: 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!loginRes.ok) {
+        setError('Registro creado, pero no fue posible iniciar sesión automáticamente');
+        return;
+      }
+
+      const loginData = await loginRes.json();
+      const payload = loginData.access_token ? jwtDecode<JwtPayload>(loginData.access_token) : null;
+
+      let userData = {
+        id: registerResponse.id ?? payload?.sub ?? '',
+        nombre: registerResponse.nombre ?? payload?.nombre ?? nombre,
+        email: registerResponse.email ?? payload?.email ?? email,
+        roles: registerResponse.roles ?? payload?.roles ?? [],
       };
 
-      if (data.access_token) {
-        setSession(
+      if (userData.id && loginData.access_token) {
+        const profileRes = await fetch(
+          `https://usuario-service-7rbo.onrender.com/usuarios/${userData.id}`,
           {
-            id: String(userData.id || ''),
-            nombre: userData.nombre || null,
-            email: userData.email || null,
-            roles: userData.roles || [],
-          },
-          data.access_token,
-          data.refresh_token
+            headers: {
+              Authorization: `Bearer ${loginData.access_token}`,
+              accept: 'application/json',
+            },
+          }
         );
+
+        if (profileRes.ok) {
+          const profile = (await profileRes.json()) as UsuarioApiResponse;
+          userData = {
+            id: profile.id ?? userData.id,
+            nombre: profile.nombre ?? userData.nombre ?? nombre,
+            email: profile.email ?? userData.email ?? email,
+            roles: profile.roles ?? userData.roles ?? [],
+          };
+        }
       }
+
+      setSession(
+        {
+          id: String(userData.id || ''),
+          nombre: userData.nombre || null,
+          email: userData.email || null,
+          roles: userData.roles || [],
+        },
+        loginData.access_token,
+        loginData.refresh_token
+      );
 
       localStorage.setItem('userData', JSON.stringify(userData));
       sessionStorage.setItem('userData', JSON.stringify(userData));
-      router.push('/clients');
+      router.push('/clients/dashboard');
     } catch {
       setError('Error de conexión, intenta de nuevo');
     } finally {

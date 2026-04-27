@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { jwtDecode } from 'jwt-decode';
+import { useAuthStore } from '@/shared/store/authStore';
 
 interface JwtPayload {
   sub?: string;
@@ -15,6 +16,13 @@ interface JwtPayload {
   [key: string]: unknown;
 }
 
+type UsuarioApiResponse = {
+  id?: string;
+  nombre?: string | null;
+  email?: string | null;
+  roles?: string[];
+};
+
 export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
@@ -22,6 +30,7 @@ export function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { setSession } = useAuthStore();
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -55,6 +64,27 @@ export function LoginPage() {
         if (!employeeData.nombre) employeeData.nombre = payload.nombre ?? '';
         if (!employeeData.email) employeeData.email = payload.email ?? email;
         if (!employeeData.roles.length) employeeData.roles = (payload.roles as string[]) ?? [];
+        if (employeeData.id) {
+          const profileRes = await fetch(
+            `https://usuario-service-7rbo.onrender.com/usuarios/${employeeData.id}`,
+            {
+              headers: {
+                Authorization: `Bearer ${data.access_token}`,
+                accept: 'application/json',
+              },
+            }
+          );
+
+          if (profileRes.ok) {
+            const profile = (await profileRes.json()) as UsuarioApiResponse;
+            employeeData = {
+              id: profile.id ?? employeeData.id,
+              nombre: profile.nombre ?? employeeData.nombre ?? '',
+              email: profile.email ?? employeeData.email ?? email,
+              roles: profile.roles ?? employeeData.roles ?? [],
+            };
+          }
+        }
       } catch { /* ignore */ }
       if (!employeeData.email) employeeData.email = email;
 
@@ -65,7 +95,22 @@ export function LoginPage() {
         return;
       }
 
+      setSession(
+        {
+          id: String(employeeData.id || ''),
+          nombre: employeeData.nombre || null,
+          email: employeeData.email || null,
+          roles: employeeData.roles || [],
+        },
+        data.access_token,
+        data.refresh_token
+      );
+
       localStorage.setItem('token', data.access_token);
+      if (data.refresh_token) {
+        localStorage.setItem('refresh_token', data.refresh_token);
+      }
+      localStorage.setItem('userData', JSON.stringify(employeeData));
       sessionStorage.setItem('employeeData', JSON.stringify(employeeData));
       router.push('/employee/dashboard');
     } catch {

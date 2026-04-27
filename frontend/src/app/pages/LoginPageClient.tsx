@@ -16,6 +16,13 @@ interface JwtPayload {
   [key: string]: unknown;
 }
 
+type UsuarioApiResponse = {
+  id?: string;
+  nombre?: string | null;
+  email?: string | null;
+  roles?: string[];
+};
+
 export function LoginPageClient() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
@@ -47,14 +54,41 @@ export function LoginPageClient() {
           email: data.email ?? data.usuario?.email ?? email,
           roles: data.roles ?? data.usuario?.roles ?? [],
         };
+
         try {
           const payload = jwtDecode<JwtPayload>(data.access_token);
           if (!userData.id) userData.id = payload.sub ?? '';
           if (!userData.nombre) userData.nombre = payload.nombre ?? payload.name ?? '';
           if (!userData.email) userData.email = payload.email ?? email;
           if (!userData.roles.length) userData.roles = (payload.roles as string[]) ?? [];
-        } catch { /* JWT decode failed, use response data or form email */ }
+
+          if (userData.id) {
+            const profileRes = await fetch(
+              `https://usuario-service-7rbo.onrender.com/usuarios/${userData.id}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${data.access_token}`,
+                  accept: 'application/json',
+                },
+              }
+            );
+
+            if (profileRes.ok) {
+              const profile = (await profileRes.json()) as UsuarioApiResponse;
+              userData = {
+                id: profile.id ?? userData.id,
+                nombre: profile.nombre ?? userData.nombre ?? null,
+                email: profile.email ?? userData.email ?? email,
+                roles: profile.roles ?? userData.roles ?? [],
+              };
+            }
+          }
+        } catch {
+          // JWT decode or profile lookup failed, use response data or form email.
+        }
+
         if (!userData.email) userData.email = email;
+        if (!userData.nombre) userData.nombre = email;
 
         setSession(
           {
