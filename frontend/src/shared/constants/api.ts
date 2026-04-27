@@ -3,8 +3,8 @@
  * Define todas las URLs base y rutas de endpoints para cada servicio
  */
 
-// Base URL for API (from env or default)
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api";
+// Base URL for API (only when a direct backend URL is configured)
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 
 /**
  * Proxy Base URLs - Rutas mediante Next.js proxy routes

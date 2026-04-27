@@ -55,7 +55,7 @@ export function ClientTopBar() {
   function handleLogout() {
     localStorage.removeItem('token');
     sessionStorage.removeItem('userData');
-    window.location.href = 'https://johns-papas-orders-service.onrender.com/clients';
+      window.location.href = '/clients';
   }
 
   return (

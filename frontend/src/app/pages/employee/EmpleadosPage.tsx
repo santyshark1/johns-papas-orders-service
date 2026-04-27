@@ -43,7 +43,7 @@ export function EmpleadosPage() {
   async function load() {
     setLoading(true);
     setError('');
-    const res = await fetch(`${USUARIO_API}/users`, {
+    const res = await fetch(`${USUARIO_API}/usuarios`, {
       headers: { Authorization: `Bearer ${token()}` },
     }).catch(() => null);
     if (res?.ok) {
@@ -95,7 +95,7 @@ export function EmpleadosPage() {
 
     let res: Response | null = null;
     if (editingId) {
-      res = await fetch(`${USUARIO_API}/users/${editingId}`, {
+      res = await fetch(`${USUARIO_API}/usuarios/${editingId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token()}` },
         body: JSON.stringify(body),
@@ -120,7 +120,7 @@ export function EmpleadosPage() {
 
   async function handleDelete(e: Empleado) {
     if (!confirm(`¿Eliminar a ${e.nombre ?? e.name ?? e.email}?`)) return;
-    const res = await fetch(`${USUARIO_API}/users/${e.id}`, {
+    const res = await fetch(`${USUARIO_API}/usuarios/${e.id}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token()}` },
     }).catch(() => null);

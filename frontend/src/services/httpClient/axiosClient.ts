@@ -1,8 +1,9 @@
 import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from "axios";
 import { useAuthStore } from "@/shared/store/authStore";
+import { USUARIO_ENDPOINTS } from "@/shared/constants/api";
 import { extractErrorMessage, isAuthenticationError, isTimeoutError, isNetworkError } from "./utils";
 
-const baseURL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api";
+const baseURL = "";
 
 // Flag para prevenir loops infinitos de refresh
 let isRefreshing = false;
@@ -13,7 +14,7 @@ async function refreshAccessToken(
 ): Promise<{ access_token: string; refresh_token: string } | null> {
   try {
     const response = await axios.post(
-      `${baseURL}/auth/refresh`,
+      USUARIO_ENDPOINTS.REFRESH_TOKEN,
       { refresh_token: refreshTokenValue },
       {
         headers: {
