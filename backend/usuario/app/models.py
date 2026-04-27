@@ -18,7 +18,7 @@ class Usuario(Base):
 		sa.Index("ix_usuarios_email", "email"),
 		{"comment": "Tabla de usuarios"},
 	)
-
+ 
 	# Identificador unico del usuario.
 	id: Mapped[uuid.UUID] = mapped_column(
 		sa.Uuid(as_uuid=True),

@@ -5,7 +5,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
-
+ 
 # Respuesta de una venta individual.
 class VentaReportResponse(BaseModel):
 	# Identificador del pedido (externo).

@@ -24,7 +24,7 @@ def _normalize_database_url(database_url: str) -> str:
 
 	return normalized
 
-
+ 
 # URL de conexion a la base de datos desde variables de entorno.
 DATABASE_URL = _normalize_database_url(
     os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./usuario.db")

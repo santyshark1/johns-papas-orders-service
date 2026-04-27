@@ -21,7 +21,7 @@ from app.schemas import (
 
 router = APIRouter(prefix="/roles", tags=["roles"])
 
-
+ 
 def _build_role_response(rol: Rol) -> RoleResponse:
 	# Construye la respuesta del rol con sus permisos.
 	permisos = [permiso.codigo for permiso in (rol.permisos or []) if permiso and permiso.codigo]

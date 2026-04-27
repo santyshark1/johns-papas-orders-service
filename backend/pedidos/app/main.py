@@ -1,14 +1,17 @@
 from __future__ import annotations
 
-import os
-import re
-
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response
 
 from app.routers.estados import router as estados_router
 from app.routers.pedidos import router as pedidos_router
+
+ORIGINS = [
+    "https://johns-papas-orders-service.onrender.com",
+    "http://localhost:5173",  # Vite
+    "http://localhost:3000",  # React
+    "http://localhost:8000",  # Desarrollo local
+]
 
 app = FastAPI(
 	title="Pedidos Service",
@@ -16,47 +19,15 @@ app = FastAPI(
 	version="1.0.0",
 )
 
-default_origins = [
-	"http://localhost",
-	"http://localhost:3000",
-	"http://localhost:5173",
-	"http://127.0.0.1",
-	"http://127.0.0.1:3000",
-	"http://127.0.0.1:5173",
-	"https://johns-papas-orders-service.onrender.com",
-]
-
-extra_origins = [
-	origin.strip()
-	for origin in os.getenv("CORS_ALLOW_ORIGINS", "").split(",")
-	if origin.strip()
-]
-
 app.add_middleware(
-	CORSMiddleware,
-	allow_origins=[*default_origins, *extra_origins],
-	allow_origin_regex=r"https://.*\.onrender\.com",
-	allow_credentials=True,
-	allow_methods=["*"],
-	allow_headers=["*"],
+    CORSMiddleware,
+    allow_origins=ORIGINS,
+    allow_origin_regex=r"https://.*\.onrender\.com",
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"],
+    allow_headers=["Authorization", "Content-Type", "Accept"],
+	max_age=600,
 )
-
-_cors_origin_pattern = re.compile(
-	r"^(https://.*\.onrender\.com|http://localhost(?::\d+)?|http://127\.0\.0\.1(?::\d+)?)$"
-)
-
-
-@app.middleware("http")
-async def ensure_cors_headers(request: Request, call_next):
-	origin = request.headers.get("origin")
-	response = await call_next(request)
-	if origin and _cors_origin_pattern.match(origin) and "access-control-allow-origin" not in response.headers:
-		response.headers["Access-Control-Allow-Origin"] = origin
-		response.headers["Access-Control-Allow-Credentials"] = "true"
-		response.headers["Vary"] = "Origin"
-	return response
-
-
 app.include_router(pedidos_router)
 app.include_router(estados_router)
 

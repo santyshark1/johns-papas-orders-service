@@ -12,7 +12,7 @@ from app.schemas import InventarioMovimientoResponse, InventarioResumenResponse
 
 
 router = APIRouter(prefix="/reportes/inventario", tags=["inventario-reportes"])
-
+ 
 
 def _apply_fecha_filtros(stmt, fecha_desde: datetime | None, fecha_hasta: datetime | None):
 	"""Aplica filtros de fecha segun parametros recibidos."""

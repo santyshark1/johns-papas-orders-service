@@ -260,7 +260,7 @@ class DireccionResponse(BaseModel):
 
 class PedidoResponse(BaseModel):
 	"""Respuesta con el pedido completo."""
-
+ 
 	# Identificador interno del pedido.
 	id: UUID
 	# Numero de orden del pedido.

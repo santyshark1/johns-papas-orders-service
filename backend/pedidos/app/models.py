@@ -10,7 +10,7 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 class Base(DeclarativeBase):
 	"""Base declarativa para los modelos."""
-
+ 
 
 # Tabla principal de pedidos.
 class Pedido(Base):
