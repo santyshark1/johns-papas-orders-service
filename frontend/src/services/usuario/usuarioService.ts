@@ -3,7 +3,7 @@
  * Handles authentication (login, register, refresh) and user management (CRUD)
  */
 
-import { axiosClient } from "./axiosClient";
+import { axiosClient } from "@/services/httpClient/axiosClient";
 import {
   LoginRequest,
   RegisterRequest,
@@ -15,7 +15,7 @@ import {
   UsuariosListResponse,
 } from "@/shared/types/api";
 import { USUARIO_ENDPOINTS } from "@/shared/constants/api";
-import { extractErrorMessage } from "./utils";
+import { extractErrorMessage } from "@/services/httpClient/utils";
 
 /**
  * Login - Autentifica un usuario
@@ -32,7 +32,6 @@ export async function login(credentials: LoginRequest): Promise<TokenResponse> {
     throw new Error(`Error al iniciar sesión: ${message}`);
   }
 }
-
 /**
  * Register - Registra un nuevo usuario
  */

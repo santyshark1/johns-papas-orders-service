@@ -116,66 +116,68 @@ export const CACHE_DURATION = {
 /**
  * Query Keys para React Query
  */
+const AUTH_QUERY_KEY = ["auth"] as const;
+const USUARIOS_QUERY_KEY = ["usuarios"] as const;
+const PEDIDOS_QUERY_KEY = ["pedidos"] as const;
+const INGREDIENTES_QUERY_KEY = ["ingredientes"] as const;
+const MOVIMIENTOS_QUERY_KEY = ["movimientos"] as const;
+const REPORTES_QUERY_KEY = ["reportes"] as const;
+const REPORTES_VENTAS_QUERY_KEY = [...REPORTES_QUERY_KEY, "ventas"] as const;
+const REPORTES_INVENTARIO_QUERY_KEY = [...REPORTES_QUERY_KEY, "inventario"] as const;
+const REPORTES_AUDITORIA_QUERY_KEY = [...REPORTES_QUERY_KEY, "auditoria"] as const;
+
 export const QUERY_KEYS = {
   // Auth
   auth: {
-    all: ["auth"] as const,
-    user: () => [...QUERY_KEYS.auth.all, "user"] as const,
+    all: AUTH_QUERY_KEY,
+    user: () => [...AUTH_QUERY_KEY, "user"] as const,
   },
 
   // Usuarios
   usuarios: {
-    all: ["usuarios"] as const,
-    lists: () => [...QUERY_KEYS.usuarios.all, "list"] as const,
-    detail: (id: string) => [...QUERY_KEYS.usuarios.all, "detail", id] as const,
+    all: USUARIOS_QUERY_KEY,
+    lists: () => [...USUARIOS_QUERY_KEY, "list"] as const,
+    detail: (id: string) => [...USUARIOS_QUERY_KEY, "detail", id] as const,
   },
 
   // Pedidos
   pedidos: {
-    all: ["pedidos"] as const,
-    lists: () => [...QUERY_KEYS.pedidos.all, "list"] as const,
-    detail: (id: string) => [...QUERY_KEYS.pedidos.all, "detail", id] as const,
-    estados: (id: string) =>
-      [...QUERY_KEYS.pedidos.all, "estados", id] as const,
+    all: PEDIDOS_QUERY_KEY,
+    lists: () => [...PEDIDOS_QUERY_KEY, "list"] as const,
+    detail: (id: string) => [...PEDIDOS_QUERY_KEY, "detail", id] as const,
+    estados: (id: string) => [...PEDIDOS_QUERY_KEY, "estados", id] as const,
   },
 
   // Ingredientes
   ingredientes: {
-    all: ["ingredientes"] as const,
-    lists: () => [...QUERY_KEYS.ingredientes.all, "list"] as const,
-    detail: (id: string) =>
-      [...QUERY_KEYS.ingredientes.all, "detail", id] as const,
+    all: INGREDIENTES_QUERY_KEY,
+    lists: () => [...INGREDIENTES_QUERY_KEY, "list"] as const,
+    detail: (id: string) => [...INGREDIENTES_QUERY_KEY, "detail", id] as const,
   },
 
   // Movimientos de Inventario
   movimientos: {
-    all: ["movimientos"] as const,
-    lists: () => [...QUERY_KEYS.movimientos.all, "list"] as const,
-    byIngrediente: (ingredienteId: string) =>
-      [...QUERY_KEYS.movimientos.all, "ingrediente", ingredienteId] as const,
+    all: MOVIMIENTOS_QUERY_KEY,
+    lists: () => [...MOVIMIENTOS_QUERY_KEY, "list"] as const,
+    byIngrediente: (ingredienteId: string) => [...MOVIMIENTOS_QUERY_KEY, "ingrediente", ingredienteId] as const,
   },
 
   // Reportes
   reportes: {
-    all: ["reportes"] as const,
+    all: REPORTES_QUERY_KEY,
     ventas: {
-      all: [...QUERY_KEYS.reportes.all, "ventas"] as const,
-      lists: () =>
-        [...QUERY_KEYS.reportes.ventas.all, "list"] as const,
-      resumen: () =>
-        [...QUERY_KEYS.reportes.ventas.all, "resumen"] as const,
+      all: REPORTES_VENTAS_QUERY_KEY,
+      lists: () => [...REPORTES_VENTAS_QUERY_KEY, "list"] as const,
+      resumen: () => [...REPORTES_VENTAS_QUERY_KEY, "resumen"] as const,
     },
     inventario: {
-      all: [...QUERY_KEYS.reportes.all, "inventario"] as const,
-      movimientos: () =>
-        [...QUERY_KEYS.reportes.inventario.all, "movimientos"] as const,
-      resumen: () =>
-        [...QUERY_KEYS.reportes.inventario.all, "resumen"] as const,
+      all: REPORTES_INVENTARIO_QUERY_KEY,
+      movimientos: () => [...REPORTES_INVENTARIO_QUERY_KEY, "movimientos"] as const,
+      resumen: () => [...REPORTES_INVENTARIO_QUERY_KEY, "resumen"] as const,
     },
     auditoria: {
-      all: [...QUERY_KEYS.reportes.all, "auditoria"] as const,
-      lists: () =>
-        [...QUERY_KEYS.reportes.auditoria.all, "list"] as const,
+      all: REPORTES_AUDITORIA_QUERY_KEY,
+      lists: () => [...REPORTES_AUDITORIA_QUERY_KEY, "list"] as const,
     },
   },
 } as const;

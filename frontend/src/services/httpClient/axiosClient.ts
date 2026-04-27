@@ -1,13 +1,33 @@
 import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from "axios";
 import { useAuthStore } from "@/shared/store/authStore";
 import { extractErrorMessage, isAuthenticationError, isTimeoutError, isNetworkError } from "./utils";
-import { refreshToken as refreshTokenService } from "@/services/usuario/usuarioService";
 
 const baseURL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api";
 
 // Flag para prevenir loops infinitos de refresh
 let isRefreshing = false;
 let refreshPromise: Promise<string | null> | null = null;
+
+async function refreshAccessToken(
+  refreshTokenValue: string
+): Promise<{ access_token: string; refresh_token: string } | null> {
+  try {
+    const response = await axios.post(
+      `${baseURL}/auth/refresh`,
+      { refresh_token: refreshTokenValue },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        timeout: 15000,
+      }
+    );
+
+    return response.data as { access_token: string; refresh_token: string };
+  } catch {
+    return null;
+  }
+}
 
 export const axiosClient = axios.create({
   baseURL,
@@ -95,7 +115,12 @@ axiosClient.interceptors.response.use(
         // Promesa de refresh para que otros requests esperen
         refreshPromise = (async () => {
           try {
-            const response = await refreshTokenService(refreshTokenValue);
+            const response = await refreshAccessToken(refreshTokenValue);
+
+            if (!response) {
+              throw new Error("No se pudo refrescar el token");
+            }
+
             const newAccessToken = response.access_token;
             const newRefreshToken = response.refresh_token;
 
