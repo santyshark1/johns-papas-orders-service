@@ -280,7 +280,13 @@ export function PedidosClientPage() {
       setToken(t);
 
       let clienteId: string | undefined;
-      try { clienteId = jwtDecode<JwtPayload>(t).sub; } catch { setLoading(false); return; }
+      try {
+        const raw = sessionStorage.getItem('userData');
+        if (raw) clienteId = JSON.parse(raw).id;
+      } catch { /* fallback */ }
+      if (!clienteId) {
+        try { clienteId = jwtDecode<JwtPayload>(t).sub; } catch { setLoading(false); return; }
+      }
       if (!clienteId) { setLoading(false); return; }
 
       const res = await fetch(

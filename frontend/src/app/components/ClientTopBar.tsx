@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { User } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { User, LogOut, X } from 'lucide-react';
 import { jwtDecode } from 'jwt-decode';
+import { useRouter } from 'next/navigation';
 
 interface JwtPayload {
   sub?: string;
@@ -11,19 +12,53 @@ interface JwtPayload {
   [key: string]: unknown;
 }
 
+interface UserData {
+  id: string;
+  nombre: string;
+  email: string;
+  roles: string[];
+}
+
 export function ClientTopBar() {
   const [nombre, setNombre] = useState<string | null>(null);
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [open, setOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   useEffect(() => {
+    const raw = sessionStorage.getItem('userData');
+    if (raw) {
+      try {
+        const u = JSON.parse(raw) as UserData;
+        setUserData(u);
+        setNombre(u.nombre ?? u.email ?? null);
+        return;
+      } catch { /* fallback */ }
+    }
     const token = localStorage.getItem('token');
     if (!token) return;
     try {
       const payload = jwtDecode<JwtPayload>(token);
       setNombre(payload.nombre ?? payload.email ?? null);
-    } catch {
-      // token inválido
-    }
+    } catch { /* token inválido */ }
   }, []);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  function handleLogout() {
+    localStorage.removeItem('token');
+    sessionStorage.removeItem('userData');
+    router.push('/clients/login');
+  }
 
   return (
     <div className="bg-white border-b border-gray-200 px-6 py-4">
@@ -31,10 +66,48 @@ export function ClientTopBar() {
         <h1 className="text-xl text-[#5C3D1E] lg:block hidden" style={{ fontFamily: 'Playfair Display, serif' }}>
           Bienvenido, {nombre ?? '....'}
         </h1>
-        <div className="lg:ml-auto flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-full bg-[#D4A017] flex items-center justify-center">
+        <div className="lg:ml-auto flex items-center space-x-3 relative" ref={dropdownRef}>
+          <button
+            onClick={() => setOpen(prev => !prev)}
+            className="w-10 h-10 rounded-full bg-[#D4A017] flex items-center justify-center hover:bg-[#D4A017]/80 transition"
+          >
             <User size={20} className="text-[#5C3D1E]" />
-          </div>
+          </button>
+
+          {open && (
+            <div className="absolute right-0 top-12 w-64 bg-white rounded-xl shadow-xl border border-gray-100 z-50">
+              <div className="flex items-center justify-between px-4 pt-4 pb-2 border-b border-gray-100">
+                <span className="text-sm font-medium text-[#5C3D1E]">Mi cuenta</span>
+                <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-gray-600">
+                  <X size={16} />
+                </button>
+              </div>
+              <div className="px-4 py-3 space-y-1">
+                <div className="flex items-center gap-2">
+                  <div className="w-9 h-9 rounded-full bg-[#D4A017] flex items-center justify-center shrink-0">
+                    <User size={18} className="text-[#5C3D1E]" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-[#5C3D1E] truncate">
+                      {userData?.nombre ?? nombre ?? '—'}
+                    </p>
+                    <p className="text-xs text-[#8B6F47] truncate">
+                      {userData?.email ?? '—'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="px-4 pb-4">
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center justify-center gap-2 py-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition text-sm"
+                >
+                  <LogOut size={15} />
+                  Cerrar sesión
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

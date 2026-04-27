@@ -142,13 +142,30 @@ function ConfirmModal({ cart, onClose, onSuccess }: {
     const token = localStorage.getItem('token');
     if (!token) { setError('Sesión expirada'); setSubmitting(false); return; }
 
-    let decoded: JwtPayload;
-    try { decoded = jwtDecode<JwtPayload>(token); } catch { setError('Sesión expirada'); setSubmitting(false); return; }
+    let clienteEmail = '';
+    let clienteId = '';
+    let clienteNombre = '';
+    try {
+      const raw = sessionStorage.getItem('userData');
+      if (raw) {
+        const u = JSON.parse(raw);
+        clienteEmail = u.email ?? '';
+        clienteId = u.id ?? '';
+        clienteNombre = u.nombre ?? '';
+      }
+    } catch { /* fallback */ }
+    if (!clienteId) {
+      let decoded: JwtPayload;
+      try { decoded = jwtDecode<JwtPayload>(token); } catch { setError('Sesión expirada'); setSubmitting(false); return; }
+      clienteEmail = decoded.email ?? '';
+      clienteId = decoded.sub ?? '';
+      clienteNombre = decoded.nombre ?? '';
+    }
 
     const payload = {
-      cliente_email: decoded.email ?? localStorage.getItem('userEmail') ?? '',
-      cliente_id: decoded.sub ?? '',
-      cliente_nombre: decoded.nombre ?? '',
+      cliente_email: clienteEmail,
+      cliente_id: clienteId,
+      cliente_nombre: clienteNombre,
       cliente_telefono: form.telefono,
       direccion: {
         calle: form.calle || 'Recogida en tienda',

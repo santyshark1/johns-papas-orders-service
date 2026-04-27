@@ -5,6 +5,15 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { jwtDecode } from 'jwt-decode';
+
+interface JwtPayload {
+  sub?: string;
+  nombre?: string;
+  email?: string;
+  roles?: string[];
+  [key: string]: unknown;
+}
 
 export function LoginPageClient() {
   const [showPassword, setShowPassword] = useState(false);
@@ -31,7 +40,15 @@ export function LoginPageClient() {
       const data = await res.json();
       if (data.access_token) {
         localStorage.setItem('token', data.access_token);
-        localStorage.setItem('userEmail', email);
+        try {
+          const payload = jwtDecode<JwtPayload>(data.access_token);
+          sessionStorage.setItem('userData', JSON.stringify({
+            id: payload.sub ?? '',
+            nombre: payload.nombre ?? '',
+            email: payload.email ?? email,
+            roles: payload.roles ?? [],
+          }));
+        } catch { /* ignore */ }
       }
       router.push('/clients/dashboard');
     } catch {
