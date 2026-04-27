@@ -5,6 +5,16 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { jwtDecode } from 'jwt-decode';
+import { useAuthStore } from '@/shared/store/authStore';
+
+interface JwtPayload {
+  sub?: string;
+  nombre?: string;
+  email?: string;
+  roles?: string[];
+  [key: string]: unknown;
+}
 
 export function RegisterPageClient() {
   const [showPassword, setShowPassword] = useState(false);
@@ -16,6 +26,7 @@ export function RegisterPageClient() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { setSession } = useAuthStore();
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -36,7 +47,32 @@ export function RegisterPageClient() {
         setError(body?.detail ?? 'Error al registrar, intenta de nuevo');
         return;
       }
-      router.push('/clients/login');
+      const data = await res.json().catch(() => ({}));
+
+      const payload = data.access_token ? jwtDecode<JwtPayload>(data.access_token) : null;
+      const userData = {
+        id: data.id ?? data.usuario?.id ?? payload?.sub ?? '',
+        nombre: data.nombre ?? data.usuario?.nombre ?? payload?.nombre ?? nombre,
+        email: data.email ?? data.usuario?.email ?? payload?.email ?? email,
+        roles: data.roles ?? data.usuario?.roles ?? payload?.roles ?? [],
+      };
+
+      if (data.access_token) {
+        setSession(
+          {
+            id: String(userData.id || ''),
+            nombre: userData.nombre || null,
+            email: userData.email || null,
+            roles: userData.roles || [],
+          },
+          data.access_token,
+          data.refresh_token
+        );
+      }
+
+      localStorage.setItem('userData', JSON.stringify(userData));
+      sessionStorage.setItem('userData', JSON.stringify(userData));
+      router.push('/clients');
     } catch {
       setError('Error de conexión, intenta de nuevo');
     } finally {

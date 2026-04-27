@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { jwtDecode } from 'jwt-decode';
+import { useAuthStore } from '@/shared/store/authStore';
 
 interface JwtPayload {
   sub?: string;
@@ -22,6 +23,7 @@ export function LoginPageClient() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { setSession } = useAuthStore();
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -39,7 +41,6 @@ export function LoginPageClient() {
       }
       const data = await res.json();
       if (data.access_token) {
-        localStorage.setItem('token', data.access_token);
         let userData = {
           id: data.id ?? data.usuario?.id ?? '',
           nombre: data.nombre ?? data.usuario?.nombre ?? '',
@@ -54,6 +55,19 @@ export function LoginPageClient() {
           if (!userData.roles.length) userData.roles = (payload.roles as string[]) ?? [];
         } catch { /* JWT decode failed, use response data or form email */ }
         if (!userData.email) userData.email = email;
+
+        setSession(
+          {
+            id: String(userData.id || ''),
+            nombre: userData.nombre || null,
+            email: userData.email || null,
+            roles: userData.roles || [],
+          },
+          data.access_token,
+          data.refresh_token
+        );
+
+        localStorage.setItem('userData', JSON.stringify(userData));
         sessionStorage.setItem('userData', JSON.stringify(userData));
       }
       router.push('/clients/dashboard');
