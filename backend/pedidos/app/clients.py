@@ -18,12 +18,13 @@ def _build_timeout() -> httpx.Timeout:
 	return httpx.Timeout(TIMEOUT_SECONDS)
 
 
-async def validar_cliente(cliente_id: UUID) -> bool:
+async def validar_cliente(cliente_id: UUID, token: str) -> bool:
 	"""Valida si existe el cliente en el servicio de usuarios."""
 	url = f"{USUARIO_SERVICE_URL}/usuarios/{cliente_id}"
+	headers = {"Authorization": f"Bearer {token}"}
 	try:
 		async with httpx.AsyncClient(timeout=_build_timeout()) as client:
-			response = await client.get(url)
+			response = await client.get(url, headers=headers)
 			return response.status_code == 200
 	except httpx.TimeoutException as exc:
 		print(f"Timeout al validar cliente: {exc}")
