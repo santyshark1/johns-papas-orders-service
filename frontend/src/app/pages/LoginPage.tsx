@@ -5,14 +5,74 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { jwtDecode } from 'jwt-decode';
+
+interface JwtPayload {
+  sub?: string;
+  nombre?: string;
+  email?: string;
+  roles?: string[];
+  [key: string]: unknown;
+}
 
 export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    router.push('/employee/dashboard');
+    setError('');
+    setLoading(true);
+    try {
+      const res = await fetch('https://usuario-service-7rbo.onrender.com/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', accept: 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      if (!res.ok) {
+        setError('Correo o contraseña incorrectos');
+        return;
+      }
+      const data = await res.json();
+      if (!data.access_token) {
+        setError('Respuesta inválida del servidor');
+        return;
+      }
+
+      let employeeData = {
+        id: data.id ?? data.usuario?.id ?? '',
+        nombre: data.nombre ?? data.usuario?.nombre ?? '',
+        email: data.email ?? data.usuario?.email ?? email,
+        roles: (data.roles ?? data.usuario?.roles ?? []) as string[],
+      };
+      try {
+        const payload = jwtDecode<JwtPayload>(data.access_token);
+        if (!employeeData.id) employeeData.id = payload.sub ?? '';
+        if (!employeeData.nombre) employeeData.nombre = payload.nombre ?? '';
+        if (!employeeData.email) employeeData.email = payload.email ?? email;
+        if (!employeeData.roles.length) employeeData.roles = (payload.roles as string[]) ?? [];
+      } catch { /* ignore */ }
+      if (!employeeData.email) employeeData.email = email;
+
+      const allowedRoles = ['admin', 'empleado', 'cajero'];
+      const hasAccess = employeeData.roles.some(r => allowedRoles.includes(r.toLowerCase()));
+      if (!hasAccess) {
+        setError('No tienes permisos para acceder a esta sección');
+        return;
+      }
+
+      localStorage.setItem('token', data.access_token);
+      sessionStorage.setItem('employeeData', JSON.stringify(employeeData));
+      router.push('/employee/dashboard');
+    } catch {
+      setError('Error de conexión, intenta de nuevo');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -27,7 +87,7 @@ export function LoginPage() {
             <span>Volver al inicio</span>
           </Link>
         </div>
-        
+
         <div className="text-center mb-8">
           <h1 className="text-3xl mb-2 text-[#5C3D1E]" style={{ fontFamily: 'Playfair Display, serif' }}>
             John's Papäs
@@ -46,6 +106,8 @@ export function LoginPage() {
               id="email"
               type="email"
               placeholder="tu@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#D4A017] focus:outline-none bg-[#FDF6EC]"
             />
           </div>
@@ -59,6 +121,8 @@ export function LoginPage() {
                 id="password"
                 type={showPassword ? 'text' : 'password'}
                 placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#D4A017] focus:outline-none bg-[#FDF6EC]"
               />
               <button
@@ -71,11 +135,14 @@ export function LoginPage() {
             </div>
           </div>
 
+          {error && <p className="text-red-600 text-sm text-center">{error}</p>}
+
           <button
             type="submit"
-            className="w-full py-3 bg-[#D4A017] text-[#5C3D1E] rounded-lg hover:bg-[#D4A017]/90 transition"
+            disabled={loading}
+            className="w-full py-3 bg-[#D4A017] text-[#5C3D1E] rounded-lg hover:bg-[#D4A017]/90 transition disabled:opacity-60"
           >
-            Ingresar
+            {loading ? 'Ingresando...' : 'Ingresar'}
           </button>
           <div className="text-center">
             <a href="#" className="text-sm text-[#8B6F47] hover:text-[#D4A017] transition">

@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { User, LogOut, X } from 'lucide-react';
 import { jwtDecode } from 'jwt-decode';
-import { useRouter } from 'next/navigation';
 
 interface JwtPayload {
   sub?: string;
@@ -24,7 +23,6 @@ export function ClientTopBar() {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
 
   useEffect(() => {
     const raw = sessionStorage.getItem('userData');
@@ -57,7 +55,7 @@ export function ClientTopBar() {
   function handleLogout() {
     localStorage.removeItem('token');
     sessionStorage.removeItem('userData');
-    router.push('/clients/login');
+    window.location.href = 'https://johns-papas-orders-service.onrender.com/clients';
   }
 
   return (

@@ -40,15 +40,21 @@ export function LoginPageClient() {
       const data = await res.json();
       if (data.access_token) {
         localStorage.setItem('token', data.access_token);
+        let userData = {
+          id: data.id ?? data.usuario?.id ?? '',
+          nombre: data.nombre ?? data.usuario?.nombre ?? '',
+          email: data.email ?? data.usuario?.email ?? email,
+          roles: data.roles ?? data.usuario?.roles ?? [],
+        };
         try {
           const payload = jwtDecode<JwtPayload>(data.access_token);
-          sessionStorage.setItem('userData', JSON.stringify({
-            id: payload.sub ?? '',
-            nombre: payload.nombre ?? '',
-            email: payload.email ?? email,
-            roles: payload.roles ?? [],
-          }));
-        } catch { /* ignore */ }
+          if (!userData.id) userData.id = payload.sub ?? '';
+          if (!userData.nombre) userData.nombre = payload.nombre ?? payload.name ?? '';
+          if (!userData.email) userData.email = payload.email ?? email;
+          if (!userData.roles.length) userData.roles = (payload.roles as string[]) ?? [];
+        } catch { /* JWT decode failed, use response data or form email */ }
+        if (!userData.email) userData.email = email;
+        sessionStorage.setItem('userData', JSON.stringify(userData));
       }
       router.push('/clients/dashboard');
     } catch {
