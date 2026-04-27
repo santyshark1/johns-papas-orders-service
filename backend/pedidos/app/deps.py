@@ -9,7 +9,9 @@ from app.auth import get_current_user
 from app.database import get_db
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login/swagger")
- 
+
+async def get_raw_token(token: str = Depends(oauth2_scheme)) -> str:
+    return token 
 
 async def get_current_user_id(
 	token: Annotated[str, Depends(oauth2_scheme)],

@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.clients import descontar_stock, validar_cliente
-from app.deps import get_current_user_id, get_db
+from app.deps import get_current_user_id, get_db, get_raw_token
 from app.models import (
 	DireccionServicio,
 	HistorialEstadoPedido,
@@ -137,6 +137,7 @@ async def _load_pedido(
 async def crear_pedido(
 	payload: PedidoCreate,
 	current_user_id: str = Depends(get_current_user_id),
+	token: str = Depends(get_raw_token),
 	session: AsyncSession = Depends(get_db),
 ) -> PedidoResponse:
 	"""Crea un pedido con sus items y direccion."""
@@ -153,7 +154,7 @@ async def crear_pedido(
 			detail="Direccion requerida para entrega a domicilio",
 		)
 
-	if not await validar_cliente(payload.cliente_id):
+	if not await validar_cliente(payload.cliente_id, token):
 		raise HTTPException(
 			status_code=status.HTTP_404_NOT_FOUND,
 			detail="Cliente no encontrado",
