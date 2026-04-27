@@ -7,10 +7,10 @@ from fastapi.security import OAuth2PasswordBearer
 
 from .auth import get_current_user
 from .database import get_db
-
+ 
 
 # OAuth2 para Swagger UI (el login real vive en usuario service).
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login/swagger")
 oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="auth/login", auto_error=False)
 
 

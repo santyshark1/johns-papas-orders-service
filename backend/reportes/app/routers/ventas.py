@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.deps import get_current_user_id, get_db
 from app.models import FactVenta
 from app.schemas import VentaReportResponse, VentaResumenResponse
-
+ 
 
 router = APIRouter(prefix="/reportes/ventas", tags=["ventas"])
 

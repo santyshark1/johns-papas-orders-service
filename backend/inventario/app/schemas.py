@@ -5,7 +5,7 @@ from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
-
+ 
 
 # Entrada para crear un ingrediente.
 class IngredienteCreate(BaseModel):

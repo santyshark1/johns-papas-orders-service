@@ -6,7 +6,7 @@ import uuid
 import sqlalchemy as sa
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
-
+ 
 class Base(DeclarativeBase):
 	"""Base declarativa para los modelos."""
 

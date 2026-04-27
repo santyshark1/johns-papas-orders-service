@@ -7,6 +7,12 @@ from app.routers.auditoria import router as auditoria_router
 from app.routers.inventario import router as inventario_router
 from app.routers.ventas import router as ventas_router
 
+ORIGINS = [
+    "https://johns-papas-orders-service.onrender.com",
+    "http://localhost:5173",  # Vite
+    "http://localhost:3000",  # React
+    "http://localhost:8000",  # Desarrollo local
+]
 
 app = FastAPI(
 	title="Reportes Service",
@@ -17,11 +23,13 @@ app = FastAPI(
 
 # Configuracion CORS para desarrollo.
 app.add_middleware(
-	CORSMiddleware,
-	allow_origins=["*"],
-	allow_credentials=True,
-	allow_methods=["*"],
-	allow_headers=["*"],
+    CORSMiddleware,
+    allow_origins=ORIGINS,
+    allow_origin_regex=r"https://.*\.onrender\.com",
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"],
+    allow_headers=["Authorization", "Content-Type", "Accept"],
+	max_age=600,
 )
 
 

@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
 from .models import Base
-
+ 
 
 def _normalize_database_url(database_url: str) -> str:
 	"""Normaliza la URL para usar el driver asyncpg."""

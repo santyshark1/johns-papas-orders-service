@@ -7,7 +7,7 @@ from sqlalchemy.orm import sessionmaker
 
 from .models import Base
 
-
+ 
 def _normalize_database_url(database_url: str) -> str:
 	"""Normaliza la URL de PostgreSQL para usar asyncpg."""
 	if database_url.startswith("postgresql+asyncpg://"):

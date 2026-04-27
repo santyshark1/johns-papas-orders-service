@@ -11,7 +11,7 @@ USUARIO_SERVICE_URL = os.getenv("USUARIO_SERVICE_URL", "http://localhost:8000")
 INVENTARIO_SERVICE_URL = os.getenv("INVENTARIO_SERVICE_URL", "http://localhost:8002")
 
 TIMEOUT_SECONDS = 5.0
-
+ 
 
 def _build_timeout() -> httpx.Timeout:
 	"""Configura el timeout para llamadas HTTP."""

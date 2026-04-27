@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 ALGORITHM = "HS256"
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "")
 
-
+ 
 def verify_token(token: str) -> dict[str, Any] | None:
 	"""Verifica el token JWT y retorna el payload si es valido."""
 	if not token or not JWT_SECRET_KEY:

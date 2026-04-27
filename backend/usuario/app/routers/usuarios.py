@@ -12,7 +12,7 @@ from app.models import Rol, Usuario, UsuarioRol
 from app.schemas import AssignRoleRequest, MessageResponse, UsuarioResponse
 from app.database import get_db
 
-
+ 
 router = APIRouter(prefix="/usuarios", tags=["usuarios"])
 
 

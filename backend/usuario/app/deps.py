@@ -12,7 +12,7 @@ from app.models import Usuario
 
 
 # Esquema OAuth2 para Swagger UI (muestra el boton Authorize).
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login/swagger")
 
 # Variante opcional para endpoints publicos.
 oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="auth/login", auto_error=False)

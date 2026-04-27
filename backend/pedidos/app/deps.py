@@ -8,8 +8,8 @@ from fastapi.security import OAuth2PasswordBearer
 from app.auth import get_current_user
 from app.database import get_db
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
-
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login/swagger")
+ 
 
 async def get_current_user_id(
 	token: Annotated[str, Depends(oauth2_scheme)],

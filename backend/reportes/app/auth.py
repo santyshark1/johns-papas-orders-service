@@ -9,7 +9,7 @@ from jose import JWTError, jwt
 
 ALGORITHM = "HS256"
 
-
+ 
 def _get_jwt_secret_key() -> str:
 	# Obtiene la clave secreta para verificar tokens.
 	secret = os.getenv("JWT_SECRET_KEY", "").strip()

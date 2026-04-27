@@ -15,7 +15,7 @@ from app.schemas import (
 	IngredienteUpdate,
 	MessageResponse,
 )
-
+ 
 router = APIRouter(prefix="/ingredientes", tags=["ingredientes"])
 
 

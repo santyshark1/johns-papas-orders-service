@@ -12,7 +12,7 @@ from app.schemas import AuditoriaResponse
 
 
 router = APIRouter(prefix="/reportes/auditoria", tags=["auditoria"])
-
+ 
 
 def _apply_filtros(
 	stmt,

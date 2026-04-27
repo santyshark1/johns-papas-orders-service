@@ -5,7 +5,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-
+ 
 from app.deps import get_current_user_id, get_db
 from app.models import HistorialEstadoPedido, Pedido
 from app.schemas import EstadoHistoryResponse

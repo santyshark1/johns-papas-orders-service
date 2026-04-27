@@ -182,7 +182,7 @@ async def listar_movimientos(
 	result = await session.execute(stmt)
 	return [_build_movimiento_response(item) for item in result.scalars().all()]
 
-
+ 
 @router.get("/movimientos/{ingrediente_id}", response_model=list[MovimientoResponse])
 async def listar_movimientos_por_ingrediente(
 	ingrediente_id: UUID,

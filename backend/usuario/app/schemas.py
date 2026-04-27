@@ -16,7 +16,7 @@ class UsuarioRegister(BaseModel):
 	email: EmailStr
 	password: str = Field(min_length=8)
 	confirm_password: str
-
+ 
 	@field_validator("email", mode="before")
 	@classmethod
 	def normalize_email(cls, value: str) -> str:
