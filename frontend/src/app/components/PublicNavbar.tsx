@@ -32,6 +32,12 @@ export function PublicNavbar() {
             >
               Acceso Empleados
             </Link>
+            <Link
+              href="/clients"
+              className="px-6 py-2 border-2 border-[#D4A017] text-[#D4A017] rounded-lg hover:bg-[#D4A017] hover:text-[#5C3D1E] transition"
+            >
+              Acceso Clientes
+            </Link>
           </div>
 
           {/* Mobile menu button */}
@@ -66,6 +72,13 @@ export function PublicNavbar() {
               onClick={() => setMobileMenuOpen(false)}
             >
               Acceso Empleados
+            </Link>
+            <Link
+              href="/clients"
+              className="block px-6 py-2 border-2 border-[#D4A017] text-[#D4A017] rounded-lg text-center hover:bg-[#D4A017] hover:text-[#5C3D1E] transition"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Acceso Clientes
             </Link>
           </div>
         )}

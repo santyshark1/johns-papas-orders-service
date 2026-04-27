@@ -23,7 +23,7 @@ class Usuario(Base):
 	id: Mapped[uuid.UUID] = mapped_column(
 		sa.Uuid(as_uuid=True),
 		primary_key=True,
-		server_default=sa.text("gen_random_uuid()"),
+		default=uuid.uuid4,
 	)
 	# Nombre visible del usuario.
 	nombre: Mapped[str | None] = mapped_column(sa.String, nullable=True)
@@ -56,7 +56,7 @@ class Rol(Base):
 	id: Mapped[uuid.UUID] = mapped_column(
 		sa.Uuid(as_uuid=True),
 		primary_key=True,
-		server_default=sa.text("gen_random_uuid()"),
+		default=uuid.uuid4,
 	)
 	# Nombre unico del rol.
 	nombre: Mapped[str | None] = mapped_column(
@@ -91,7 +91,7 @@ class Permiso(Base):
 	id: Mapped[uuid.UUID] = mapped_column(
 		sa.Uuid(as_uuid=True),
 		primary_key=True,
-		server_default=sa.text("gen_random_uuid()"),
+		default=uuid.uuid4,
 	)
 	# Codigo unico del permiso.
 	codigo: Mapped[str | None] = mapped_column(

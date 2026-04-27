@@ -1,7 +1,7 @@
 docker run -d \
   --name postgres-local \
   -e POSTGRES_USER=user \
-  -e POSTGRES_PASSWORD=password \
+  -e POSTGRES_PASSWORD=jh0n_p4p4s_db \
   -e POSTGRES_DB=pedidos \
   -p 5432:5432 \
   postgres:15

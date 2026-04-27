@@ -2,29 +2,44 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { User, LogOut, X } from 'lucide-react';
+import { jwtDecode } from 'jwt-decode';
 
-interface EmployeeData {
+interface JwtPayload {
+  sub?: string;
+  nombre?: string;
+  email?: string;
+  [key: string]: unknown;
+}
+
+interface UserData {
   id: string;
   nombre: string;
   email: string;
   roles: string[];
 }
 
-export function EmployeeTopBar() {
+export function ClientTopBar() {
   const [nombre, setNombre] = useState<string | null>(null);
-  const [employeeData, setEmployeeData] = useState<EmployeeData | null>(null);
+  const [userData, setUserData] = useState<UserData | null>(null);
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const raw = sessionStorage.getItem('employeeData');
+    const raw = sessionStorage.getItem('userData');
     if (raw) {
       try {
-        const u = JSON.parse(raw) as EmployeeData;
-        setEmployeeData(u);
+        const u = JSON.parse(raw) as UserData;
+        setUserData(u);
         setNombre(u.nombre ?? u.email ?? null);
-      } catch { /* ignore */ }
+        return;
+      } catch { /* fallback */ }
     }
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    try {
+      const payload = jwtDecode<JwtPayload>(token);
+      setNombre(payload.nombre ?? payload.email ?? null);
+    } catch { /* token inválido */ }
   }, []);
 
   useEffect(() => {
@@ -39,8 +54,8 @@ export function EmployeeTopBar() {
 
   function handleLogout() {
     localStorage.removeItem('token');
-    sessionStorage.removeItem('employeeData');
-    window.location.href = '/login';
+    sessionStorage.removeItem('userData');
+    window.location.href = 'https://johns-papas-orders-service.onrender.com/clients';
   }
 
   return (
@@ -72,16 +87,11 @@ export function EmployeeTopBar() {
                   </div>
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-[#5C3D1E] truncate">
-                      {employeeData?.nombre ?? nombre ?? '—'}
+                      {userData?.nombre ?? nombre ?? '—'}
                     </p>
                     <p className="text-xs text-[#8B6F47] truncate">
-                      {employeeData?.email ?? '—'}
+                      {userData?.email ?? '—'}
                     </p>
-                    {employeeData?.roles?.length ? (
-                      <p className="text-xs text-[#D4A017] truncate capitalize">
-                        {employeeData.roles.join(', ')}
-                      </p>
-                    ) : null}
                   </div>
                 </div>
               </div>

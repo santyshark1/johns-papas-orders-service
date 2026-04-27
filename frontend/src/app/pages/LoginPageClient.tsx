@@ -15,7 +15,7 @@ interface JwtPayload {
   [key: string]: unknown;
 }
 
-export function LoginPage() {
+export function LoginPageClient() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -38,36 +38,25 @@ export function LoginPage() {
         return;
       }
       const data = await res.json();
-      if (!data.access_token) {
-        setError('Respuesta inválida del servidor');
-        return;
+      if (data.access_token) {
+        localStorage.setItem('token', data.access_token);
+        let userData = {
+          id: data.id ?? data.usuario?.id ?? '',
+          nombre: data.nombre ?? data.usuario?.nombre ?? '',
+          email: data.email ?? data.usuario?.email ?? email,
+          roles: data.roles ?? data.usuario?.roles ?? [],
+        };
+        try {
+          const payload = jwtDecode<JwtPayload>(data.access_token);
+          if (!userData.id) userData.id = payload.sub ?? '';
+          if (!userData.nombre) userData.nombre = payload.nombre ?? payload.name ?? '';
+          if (!userData.email) userData.email = payload.email ?? email;
+          if (!userData.roles.length) userData.roles = (payload.roles as string[]) ?? [];
+        } catch { /* JWT decode failed, use response data or form email */ }
+        if (!userData.email) userData.email = email;
+        sessionStorage.setItem('userData', JSON.stringify(userData));
       }
-
-      let employeeData = {
-        id: data.id ?? data.usuario?.id ?? '',
-        nombre: data.nombre ?? data.usuario?.nombre ?? '',
-        email: data.email ?? data.usuario?.email ?? email,
-        roles: (data.roles ?? data.usuario?.roles ?? []) as string[],
-      };
-      try {
-        const payload = jwtDecode<JwtPayload>(data.access_token);
-        if (!employeeData.id) employeeData.id = payload.sub ?? '';
-        if (!employeeData.nombre) employeeData.nombre = payload.nombre ?? '';
-        if (!employeeData.email) employeeData.email = payload.email ?? email;
-        if (!employeeData.roles.length) employeeData.roles = (payload.roles as string[]) ?? [];
-      } catch { /* ignore */ }
-      if (!employeeData.email) employeeData.email = email;
-
-      const allowedRoles = ['admin', 'empleado', 'cajero'];
-      const hasAccess = employeeData.roles.some(r => allowedRoles.includes(r.toLowerCase()));
-      if (!hasAccess) {
-        setError('No tienes permisos para acceder a esta sección');
-        return;
-      }
-
-      localStorage.setItem('token', data.access_token);
-      sessionStorage.setItem('employeeData', JSON.stringify(employeeData));
-      router.push('/employee/dashboard');
+      router.push('/clients/dashboard');
     } catch {
       setError('Error de conexión, intenta de nuevo');
     } finally {
@@ -87,13 +76,13 @@ export function LoginPage() {
             <span>Volver al inicio</span>
           </Link>
         </div>
-
+        
         <div className="text-center mb-8">
           <h1 className="text-3xl mb-2 text-[#5C3D1E]" style={{ fontFamily: 'Playfair Display, serif' }}>
             John's Papäs
           </h1>
           <h2 className="text-xl text-[#5C3D1E]" style={{ fontFamily: 'Playfair Display, serif' }}>
-            Acceso Empleados
+            Acceso Clientes
           </h2>
         </div>
 
@@ -135,7 +124,9 @@ export function LoginPage() {
             </div>
           </div>
 
-          {error && <p className="text-red-600 text-sm text-center">{error}</p>}
+          {error && (
+            <p className="text-red-600 text-sm text-center">{error}</p>
+          )}
 
           <button
             type="submit"
@@ -144,6 +135,12 @@ export function LoginPage() {
           >
             {loading ? 'Ingresando...' : 'Ingresar'}
           </button>
+          <Link
+            href="/clients/register"
+            className="block w-full py-3 text-center border-2 border-[#D4A017] text-[#5C3D1E] rounded-lg hover:bg-[#D4A017]/10 transition"
+          >
+            Registrarme
+          </Link>
           <div className="text-center">
             <a href="#" className="text-sm text-[#8B6F47] hover:text-[#D4A017] transition">
               ¿Olvidaste tu contraseña?

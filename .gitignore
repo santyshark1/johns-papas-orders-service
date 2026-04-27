@@ -24,6 +24,8 @@ node_modules/
 .next/
 frontend/dist/
 frontend/.env*.local
+!frontend/src/shared/lib/
+!frontend/src/shared/lib/queryClient.ts
 
 # Bases de datos y Variables de Entorno
 .env
