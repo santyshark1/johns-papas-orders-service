@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const INVENTARIO_BASE = process.env.INVENTARIO_SERVICE_URL ?? process.env.NEXT_PUBLIC_INVENTARIO_API_URL ?? 'http://localhost:8002';
+const INVENTARIO_BASE = process.env.INVENTARIO_SERVICE_URL ?? 'https://inventario-service-pob1.onrender.com';
 const STRIP_HEADERS = new Set(['content-encoding', 'transfer-encoding', 'connection', 'keep-alive']);
 
 async function proxy(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
