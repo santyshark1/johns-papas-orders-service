@@ -37,7 +37,6 @@ export function usePedidos(params?: {
     queryFn: () => getPedidos(params),
     staleTime: CACHE_DURATION.SHORT,
     gcTime: CACHE_DURATION.MEDIUM,
-    retry: 2,
   });
 }
 
@@ -51,7 +50,6 @@ export function usePedidoById(pedidoId: string | null | undefined) {
     enabled: !!pedidoId,
     staleTime: CACHE_DURATION.SHORT,
     gcTime: CACHE_DURATION.MEDIUM,
-    retry: 2,
   });
 }
 

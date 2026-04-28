@@ -69,8 +69,12 @@ export function PedidosPage() {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     }).catch(() => null);
     if (res?.ok) {
-      const json = await res.json();
-      setOrders(Array.isArray(json) ? json : (json.items ?? json.data ?? []));
+      try {
+        const json = await res.json();
+        setOrders(Array.isArray(json) ? json : (json.items ?? json.data ?? []));
+      } catch {
+        setError('Error al procesar la respuesta del servidor');
+      }
     } else {
       setError('No se pudieron cargar los pedidos');
     }

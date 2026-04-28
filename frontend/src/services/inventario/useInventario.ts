@@ -36,7 +36,6 @@ export function useIngredientes(params?: {
     queryFn: () => getIngredientes(params),
     staleTime: CACHE_DURATION.MEDIUM,
     gcTime: CACHE_DURATION.LONG,
-    retry: 2,
   });
 }
 
@@ -50,7 +49,6 @@ export function useIngredienteById(ingredienteId: string | null | undefined) {
     enabled: !!ingredienteId,
     staleTime: CACHE_DURATION.MEDIUM,
     gcTime: CACHE_DURATION.LONG,
-    retry: 2,
   });
 }
 
@@ -123,7 +121,6 @@ export function useMovimientos(params?: {
     queryFn: () => getMovimientos(params),
     staleTime: CACHE_DURATION.MEDIUM,
     gcTime: CACHE_DURATION.LONG,
-    retry: 2,
   });
 }
 

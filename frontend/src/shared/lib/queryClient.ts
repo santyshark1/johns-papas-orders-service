@@ -8,50 +8,33 @@ export function createQueryClient() {
   return new QueryClient({
     defaultOptions: {
       queries: {
-        // Retry strategy con exponential backoff
         retry: (failureCount, error: any) => {
-          // No reintentar si es error de autenticación
-          if (error?.status === 401 || error?.status === 403) {
+          const status = error?.status;
+          if (status === 401 || status === 403 || status === 404 || status === 429) {
             return false;
           }
-
-          // Reintentar máximo 3 veces
-          return failureCount < 3;
+          return failureCount < 1;
         },
 
-        retryDelay: (attemptIndex) => {
-          return exponentialBackoffDelay(attemptIndex);
-        },
+        retryDelay: (attemptIndex) => exponentialBackoffDelay(attemptIndex),
 
-        // Datos frescos por 5 minutos por defecto
         staleTime: 5 * 60 * 1000,
-
-        // Mantener datos en caché por 1 hora
-        gcTime: 60 * 60 * 1000, // antes conocido como cacheTime
-
-        // No refetch al cambiar de pestaña
+        gcTime: 60 * 60 * 1000,
         refetchOnWindowFocus: false,
-
-        // No refetch al reconectar
         refetchOnReconnect: false,
-
-        // No refetch al montar (a menos que esté stale)
         refetchOnMount: false,
       },
 
       mutations: {
-        // Retry de mutaciones máximo 2 veces
         retry: (failureCount, error: any) => {
-          // No reintentar errores de validación
-          if (error?.status === 400) {
+          const status = error?.status;
+          if (status === 400 || status === 409 || status === 429) {
             return false;
           }
-          return failureCount < 2;
+          return failureCount < 1;
         },
 
-        retryDelay: (attemptIndex) => {
-          return exponentialBackoffDelay(attemptIndex);
-        },
+        retryDelay: (attemptIndex) => exponentialBackoffDelay(attemptIndex),
       },
     },
   });
