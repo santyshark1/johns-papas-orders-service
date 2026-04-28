@@ -47,8 +47,12 @@ export function EmpleadosPage() {
       headers: { Authorization: `Bearer ${token()}` },
     }).catch(() => null);
     if (res?.ok) {
-      const data = await res.json();
-      setEmpleados(Array.isArray(data) ? data : (data.items ?? data.data ?? data.users ?? []));
+      try {
+        const data = await res.json();
+        setEmpleados(Array.isArray(data) ? data : (data.items ?? data.data ?? data.users ?? []));
+      } catch {
+        setError('Error al procesar la respuesta del servidor');
+      }
     } else {
       setError('No se pudieron cargar los empleados');
     }

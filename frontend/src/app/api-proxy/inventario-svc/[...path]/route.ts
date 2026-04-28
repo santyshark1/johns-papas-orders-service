@@ -1,18 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const INVENTARIO_BASE = process.env.INVENTARIO_SERVICE_URL ?? process.env.NEXT_PUBLIC_INVENTARIO_API_URL ?? '';
+const INVENTARIO_BASE = process.env.INVENTARIO_SERVICE_URL ?? process.env.NEXT_PUBLIC_INVENTARIO_API_URL ?? 'http://localhost:8002';
 const STRIP_HEADERS = new Set(['content-encoding', 'transfer-encoding', 'connection', 'keep-alive']);
 
 async function proxy(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
   const { path: pathSegments } = await params;
   const path = pathSegments.join('/');
-
-  if (!INVENTARIO_BASE) {
-    return NextResponse.json(
-      { detail: 'Configura INVENTARIO_SERVICE_URL para habilitar el proxy de inventario' },
-      { status: 503 }
-    );
-  }
 
   const url = new URL(`${INVENTARIO_BASE}/${path}`);
   url.search = req.nextUrl.search;

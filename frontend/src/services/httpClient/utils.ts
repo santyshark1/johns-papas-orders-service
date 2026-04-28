@@ -58,7 +58,7 @@ export function getHttpErrorMessage(status: number): string {
     case 408:
     case 504:
       return ERROR_MESSAGES.TIMEOUT;
-    case 5000:
+    case 500:
       return ERROR_MESSAGES.SERVER_ERROR;
     default:
       if (status >= 500) {

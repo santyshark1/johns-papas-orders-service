@@ -106,11 +106,11 @@ export const API_TIMEOUTS = {
  * Usado por React Query para determinar staleTime
  */
 export const CACHE_DURATION = {
-  IMMEDIATE: 0, // Sin caché (siempre fresco)
-  SHORT: 5 * 60, // 5 minutos
-  MEDIUM: 15 * 60, // 15 minutos
-  LONG: 60 * 60, // 1 hora
-  VERY_LONG: 24 * 60 * 60, // 24 horas
+  IMMEDIATE: 0,
+  SHORT: 5 * 60 * 1000,
+  MEDIUM: 15 * 60 * 1000,
+  LONG: 60 * 60 * 1000,
+  VERY_LONG: 24 * 60 * 60 * 1000,
 } as const;
 
 /**
