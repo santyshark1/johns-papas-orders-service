@@ -10,7 +10,7 @@ from fastapi import HTTPException
 USUARIO_SERVICE_URL = os.getenv("USUARIO_SERVICE_URL", "http://localhost:8000")
 INVENTARIO_SERVICE_URL = os.getenv("INVENTARIO_SERVICE_URL", "http://localhost:8002")
 
-TIMEOUT_SECONDS = 5.0
+TIMEOUT_SECONDS = 25.0
  
 
 def _build_timeout() -> httpx.Timeout:

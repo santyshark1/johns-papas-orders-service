@@ -24,7 +24,7 @@ async function proxy(req: NextRequest, { params }: { params: Promise<{ path: str
       method: req.method,
       headers: forwardHeaders,
       body: body ? Buffer.from(body) : undefined,
-      signal: AbortSignal.timeout(30_000),
+      signal: AbortSignal.timeout(60_000),
     });
 
     const resHeaders = new Headers();
