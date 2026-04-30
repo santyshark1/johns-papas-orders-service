@@ -198,16 +198,18 @@ async def crear_pedido(
 
 	items: list[ItemPedido] = []
 	for item in payload.items:
+		item_total = _to_decimal(item.precio_unitario_snapshot) * item.cantidad
 		item_model = ItemPedido(
 			producto_id=item.producto_id,
 			cantidad=item.cantidad,
 			precio_unitario_snapshot=_to_decimal(item.precio_unitario_snapshot),
-			total_item=_to_decimal(item.precio_unitario_snapshot) * item.cantidad,
+			total_item=item_total,
+			subtotal_snapshot=item_total,
 			nombre_producto_snapshot=item.nombre_producto_snapshot,
 			sku_producto_snapshot=item.sku_producto_snapshot or "",
 			impuesto_item=_to_decimal(item.impuesto_item),
 			descuento_item=_to_decimal(item.descuento_item),
-			variantes_json=item.variantes_json,
+			variantes_json=item.variantes_json or {},
 			notas=item.notas or "",
 		)
 		for opcion in item.opciones_seleccionadas or []:
@@ -250,6 +252,8 @@ async def crear_pedido(
 		raise
 	except Exception as exc:
 		await session.rollback()
+		import logging
+		logging.getLogger(__name__).error("Error al crear pedido: %s", exc, exc_info=True)
 		raise HTTPException(
 			status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
 			detail="Error al crear el pedido",

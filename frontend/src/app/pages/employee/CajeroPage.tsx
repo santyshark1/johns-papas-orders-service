@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { EmployeeSidebar } from '../../components/EmployeeSidebar';
 import { EmployeeTopBar } from '../../components/EmployeeTopBar';
 import { Pizza, Cake, Plus, Coffee, ShoppingCart, X, Trash2, CheckCircle } from 'lucide-react';
+import { jwtDecode } from 'jwt-decode';
 
 const PEDIDOS_API = 'https://pedidos-service-bwn3.onrender.com';
 const TIENDA_ID = '00000000-0000-0000-0000-000000000001';
@@ -28,7 +29,7 @@ const pizzas = [
 interface CartItem { id: string; name: string; sku: string; quantity: number; price: number }
 
 export function CajeroPage() {
-  const [orderType, setOrderType] = useState<'LLEVAR' | 'COMER_ACA'>('LLEVAR');
+  const [orderType, setOrderType] = useState<'RECOGIDA' | 'RETIRO_TIENDA'>('RECOGIDA');
   const [selectedCategory, setSelectedCategory] = useState('Pizzas');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showCheckout, setShowCheckout] = useState(false);
@@ -71,16 +72,29 @@ export function CajeroPage() {
     setSubmitting(true);
     setCheckoutError('');
     const token = localStorage.getItem('token');
+    if (!token) { setCheckoutError('Sesión expirada'); setSubmitting(false); return; }
+
+    let cajeroId = '';
+    let cajeroEmail = '';
+    try {
+      const raw = sessionStorage.getItem('userData');
+      if (raw) { const u = JSON.parse(raw); cajeroId = u.id ?? ''; cajeroEmail = u.email ?? ''; }
+    } catch { /* fallback */ }
+    if (!cajeroId) {
+      try { const d = jwtDecode<{ sub?: string; email?: string }>(token); cajeroId = d.sub ?? ''; cajeroEmail = d.email ?? ''; } catch { /* ignore */ }
+    }
+    if (!cajeroId) { setCheckoutError('No se pudo identificar el usuario'); setSubmitting(false); return; }
+
     const payload = {
-      cliente_email: customerForm.email || 'cliente@tienda.com',
-      cliente_id: '00000000-0000-0000-0000-000000000000',
+      cliente_email: customerForm.email || cajeroEmail || 'caja@tienda.com',
+      cliente_id: cajeroId,
       cliente_nombre: customerForm.nombre,
       cliente_telefono: customerForm.telefono,
       direccion: {
         calle: customerForm.calle || 'Recogida en tienda',
         ciudad: customerForm.ciudad || TIENDA_NOMBRE,
-        numero1: customerForm.numero1,
-        numero2: customerForm.numero2,
+        numero1: customerForm.numero1 || '0',
+        numero2: customerForm.numero2 || undefined,
         tipo: 'ENVIO',
       },
       entrega: orderType,
@@ -96,7 +110,7 @@ export function CajeroPage() {
         sku_producto_snapshot: it.sku,
         variantes_json: {},
       })),
-      plataforma: 'POS',
+      plataforma: 'TIENDA_FISICA',
       tienda_id: TIENDA_ID,
       tienda_nombre: TIENDA_NOMBRE,
     };
@@ -137,10 +151,10 @@ export function CajeroPage() {
 
           <div className="flex justify-center mb-6">
             <div className="bg-white rounded-full p-1 flex">
-              {(['LLEVAR', 'COMER_ACA'] as const).map(t => (
+              {(['RECOGIDA', 'RETIRO_TIENDA'] as const).map(t => (
                 <button key={t} onClick={() => setOrderType(t)}
                   className={`px-6 py-2 rounded-full transition ${orderType === t ? 'bg-[#D4A017] text-[#5C3D1E]' : 'text-[#5C3D1E]'}`}>
-                  {t === 'LLEVAR' ? 'PARA LLEVAR' : 'COMER ACÁ'}
+                  {t === 'RECOGIDA' ? 'PARA LLEVAR' : 'COMER ACÁ'}
                 </button>
               ))}
             </div>

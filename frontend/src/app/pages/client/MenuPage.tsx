@@ -170,8 +170,8 @@ function ConfirmModal({ cart, onClose, onSuccess }: {
       direccion: {
         calle: form.calle || 'Recogida en tienda',
         ciudad: form.ciudad || 'Johns Papas',
-        numero1: form.numero1,
-        numero2: form.numero2,
+        numero1: form.numero1 || '0',
+        numero2: form.numero2 || undefined,
         tipo: 'ENVIO',
       },
       entrega: form.entrega,
