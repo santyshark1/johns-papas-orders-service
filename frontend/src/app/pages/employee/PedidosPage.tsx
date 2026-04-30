@@ -5,7 +5,7 @@ import { EmployeeSidebar } from '../../components/EmployeeSidebar';
 import { EmployeeTopBar } from '../../components/EmployeeTopBar';
 import { RefreshCw, Eye, X } from 'lucide-react';
 
-const PEDIDOS_API = '/api-proxy/pedidos-svc';
+const PEDIDOS_API = 'https://pedidos-service-bwn3.onrender.com';
 
 const filters = ['Todos', 'Pendientes', 'En Preparación', 'Listos', 'Entregados', 'Domicilios'];
 

@@ -5,7 +5,7 @@ import { EmployeeSidebar } from '../../components/EmployeeSidebar';
 import { EmployeeTopBar } from '../../components/EmployeeTopBar';
 import { Plus, Edit, Trash2, Search, User, X, RefreshCw } from 'lucide-react';
 
-const USUARIO_API = '/api-proxy/usuario-svc';
+const USUARIO_API = 'https://usuario-service-7rbo.onrender.com';
 
 interface Empleado {
   id?: string;

@@ -5,7 +5,7 @@ import { EmployeeSidebar } from '../../components/EmployeeSidebar';
 import { EmployeeTopBar } from '../../components/EmployeeTopBar';
 import { Pizza, Cake, Plus, Coffee, ShoppingCart, X, Trash2, CheckCircle } from 'lucide-react';
 
-const PEDIDOS_API = '/api-proxy/pedidos-svc';
+const PEDIDOS_API = 'https://pedidos-service-bwn3.onrender.com';
 const TIENDA_ID = '00000000-0000-0000-0000-000000000001';
 const TIENDA_NOMBRE = "John's Papas";
 

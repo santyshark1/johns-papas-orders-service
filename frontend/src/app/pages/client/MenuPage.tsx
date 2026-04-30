@@ -13,7 +13,7 @@ interface JwtPayload {
   [key: string]: unknown;
 }
 
-const PEDIDOS_API = '/api-proxy/pedidos-svc';
+const PEDIDOS_API = 'https://pedidos-service-bwn3.onrender.com';
 const TIENDA_ID = 'e1b4d9f5-4d98-4b4e-8f77-9e71f6b4b0d2';
 const TIENDA_NOMBRE = 'Johns Papas';
 
