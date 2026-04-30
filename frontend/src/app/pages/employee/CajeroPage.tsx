@@ -257,7 +257,7 @@ export function CajeroPage() {
                   className="w-full px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-[#D4A017] focus:outline-none bg-[#FDF6EC]"
                 />
               </div>
-              {orderType === 'LLEVAR' && (
+              {orderType === 'RECOGIDA' && (
                 <>
                   <div>
                     <label className="block text-sm mb-1 text-[#5C3D1E]">Calle</label>
