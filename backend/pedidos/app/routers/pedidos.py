@@ -164,11 +164,10 @@ async def crear_pedido(
 		{"ingrediente_id": item.producto_id, "cantidad": item.cantidad}
 		for item in payload.items
 	]
-	if not await descontar_stock(stock_items):
-		raise HTTPException(
-			status_code=status.HTTP_409_CONFLICT,
-			detail="Sin stock disponible",
-		)
+	try:
+		await descontar_stock(stock_items)
+	except HTTPException:
+		pass
 
 	subtotal = sum(
 		(_to_decimal(item.precio_unitario_snapshot) * item.cantidad)

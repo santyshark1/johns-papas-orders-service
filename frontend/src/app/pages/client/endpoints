@@ -1,0 +1,613 @@
+Inventario Service
+ 1.0.0 
+OAS 3.1
+/openapi.json
+Microservicio de gestión de inventario e ingredientes
+
+
+Authorize
+ingredientes
+
+
+GET
+/ingredientes
+Listar Ingredientes
+
+
+Lista todos los ingredientes ordenados por nombre.
+
+Parameters
+Try it out
+No parameters
+
+Responses
+Code	Description	Links
+200	
+Successful Response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+[
+  {
+    "costo_unitario": 1.2,
+    "id": "b0f9e9d8-2a2c-4e65-a3a3-2d5d1f82615a",
+    "nombre": "Papas",
+    "stock_actual": 25.5
+  }
+]
+No links
+
+POST
+/ingredientes
+Crear Ingrediente
+
+
+Crea un ingrediente nuevo.
+
+Parameters
+Try it out
+No parameters
+
+Request body
+
+application/json
+Example Value
+Schema
+{
+  "costo_unitario": 1.2,
+  "nombre": "Papas",
+  "stock_actual": 25.5
+}
+Responses
+Code	Description	Links
+201	
+Successful Response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+{
+  "costo_unitario": 1.2,
+  "id": "b0f9e9d8-2a2c-4e65-a3a3-2d5d1f82615a",
+  "nombre": "Papas",
+  "stock_actual": 25.5
+}
+No links
+422	
+Validation Error
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "detail": [
+    {
+      "loc": [
+        "string",
+        0
+      ],
+      "msg": "string",
+      "type": "string",
+      "input": "string",
+      "ctx": {}
+    }
+  ]
+}
+No links
+
+GET
+/ingredientes/{ingrediente_id}
+Obtener Ingrediente
+
+
+Obtiene un ingrediente por id.
+
+Parameters
+Try it out
+Name	Description
+ingrediente_id *
+string($uuid)
+(path)
+ingrediente_id
+Responses
+Code	Description	Links
+200	
+Successful Response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+{
+  "costo_unitario": 1.2,
+  "id": "b0f9e9d8-2a2c-4e65-a3a3-2d5d1f82615a",
+  "nombre": "Papas",
+  "stock_actual": 25.5
+}
+No links
+422	
+Validation Error
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "detail": [
+    {
+      "loc": [
+        "string",
+        0
+      ],
+      "msg": "string",
+      "type": "string",
+      "input": "string",
+      "ctx": {}
+    }
+  ]
+}
+No links
+
+PUT
+/ingredientes/{ingrediente_id}
+Actualizar Ingrediente
+
+
+Actualiza el stock o costo del ingrediente.
+
+Parameters
+Try it out
+Name	Description
+ingrediente_id *
+string($uuid)
+(path)
+ingrediente_id
+Request body
+
+application/json
+Example Value
+Schema
+{
+  "costo_unitario": 1.35,
+  "stock_actual": 40
+}
+Responses
+Code	Description	Links
+200	
+Successful Response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+{
+  "costo_unitario": 1.2,
+  "id": "b0f9e9d8-2a2c-4e65-a3a3-2d5d1f82615a",
+  "nombre": "Papas",
+  "stock_actual": 25.5
+}
+No links
+422	
+Validation Error
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "detail": [
+    {
+      "loc": [
+        "string",
+        0
+      ],
+      "msg": "string",
+      "type": "string",
+      "input": "string",
+      "ctx": {}
+    }
+  ]
+}
+No links
+
+DELETE
+/ingredientes/{ingrediente_id}
+Eliminar Ingrediente
+
+
+Elimina un ingrediente si no tiene movimientos asociados.
+
+Parameters
+Try it out
+Name	Description
+ingrediente_id *
+string($uuid)
+(path)
+ingrediente_id
+Responses
+Code	Description	Links
+200	
+Successful Response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+{
+  "message": "Operacion exitosa",
+  "success": true
+}
+No links
+422	
+Validation Error
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "detail": [
+    {
+      "loc": [
+        "string",
+        0
+      ],
+      "msg": "string",
+      "type": "string",
+      "input": "string",
+      "ctx": {}
+    }
+  ]
+}
+No links
+inventario
+
+
+POST
+/inventario/descontar
+Descontar Stock
+
+
+Descuenta stock para una lista de ingredientes de forma transaccional.
+
+Parameters
+Try it out
+No parameters
+
+Request body
+
+application/json
+Example Value
+Schema
+{
+  "items": [
+    {
+      "cantidad": 2,
+      "ingrediente_id": "b0f9e9d8-2a2c-4e65-a3a3-2d5d1f82615a"
+    }
+  ]
+}
+Responses
+Code	Description	Links
+200	
+Successful Response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+{
+  "detalles": [
+    {
+      "cantidad_solicitada": 2,
+      "ingrediente_id": "b0f9e9d8-2a2c-4e65-a3a3-2d5d1f82615a",
+      "ingrediente_nombre": "Papas",
+      "mensaje": "Stock actualizado",
+      "stock_actual": 10,
+      "success": true
+    }
+  ],
+  "mensaje": "Descuento procesado",
+  "success": true
+}
+No links
+422	
+Validation Error
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "detail": [
+    {
+      "loc": [
+        "string",
+        0
+      ],
+      "msg": "string",
+      "type": "string",
+      "input": "string",
+      "ctx": {}
+    }
+  ]
+}
+No links
+
+POST
+/inventario/movimientos
+Crear Movimiento
+
+
+Registra un movimiento manual de inventario.
+
+Parameters
+Try it out
+No parameters
+
+Request body
+
+application/json
+Example Value
+Schema
+{
+  "cantidad": 12.5,
+  "ingrediente_id": "b0f9e9d8-2a2c-4e65-a3a3-2d5d1f82615a",
+  "tipo_movimiento": "ENTRADA"
+}
+Responses
+Code	Description	Links
+201	
+Successful Response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+{
+  "cantidad": 3,
+  "creado_en": "2024-01-10T14:30:00Z",
+  "id": "5c3c9e3b-9b77-45b9-92d1-3b9d2c9f7c4a",
+  "ingrediente_id": "b0f9e9d8-2a2c-4e65-a3a3-2d5d1f82615a",
+  "ingrediente_nombre": "Papas",
+  "tipo_movimiento": "SALIDA"
+}
+No links
+422	
+Validation Error
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "detail": [
+    {
+      "loc": [
+        "string",
+        0
+      ],
+      "msg": "string",
+      "type": "string",
+      "input": "string",
+      "ctx": {}
+    }
+  ]
+}
+No links
+
+GET
+/inventario/movimientos
+Listar Movimientos
+
+
+Lista movimientos de inventario, con filtro opcional por ingrediente.
+
+Parameters
+Try it out
+Name	Description
+ingrediente_id
+string | (string | null)($uuid)
+(query)
+ingrediente_id
+Responses
+Code	Description	Links
+200	
+Successful Response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+[
+  {
+    "cantidad": 3,
+    "creado_en": "2024-01-10T14:30:00Z",
+    "id": "5c3c9e3b-9b77-45b9-92d1-3b9d2c9f7c4a",
+    "ingrediente_id": "b0f9e9d8-2a2c-4e65-a3a3-2d5d1f82615a",
+    "ingrediente_nombre": "Papas",
+    "tipo_movimiento": "SALIDA"
+  }
+]
+No links
+422	
+Validation Error
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "detail": [
+    {
+      "loc": [
+        "string",
+        0
+      ],
+      "msg": "string",
+      "type": "string",
+      "input": "string",
+      "ctx": {}
+    }
+  ]
+}
+No links
+
+GET
+/inventario/movimientos/{ingrediente_id}
+Listar Movimientos Por Ingrediente
+
+
+Lista movimientos de un ingrediente especifico.
+
+Parameters
+Try it out
+Name	Description
+ingrediente_id *
+string($uuid)
+(path)
+ingrediente_id
+Responses
+Code	Description	Links
+200	
+Successful Response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+[
+  {
+    "cantidad": 3,
+    "creado_en": "2024-01-10T14:30:00Z",
+    "id": "5c3c9e3b-9b77-45b9-92d1-3b9d2c9f7c4a",
+    "ingrediente_id": "b0f9e9d8-2a2c-4e65-a3a3-2d5d1f82615a",
+    "ingrediente_nombre": "Papas",
+    "tipo_movimiento": "SALIDA"
+  }
+]
+No links
+422	
+Validation Error
+
+Media type
+
+application/json
+Example Value
+Schema
+{
+  "detail": [
+    {
+      "loc": [
+        "string",
+        0
+      ],
+      "msg": "string",
+      "type": "string",
+      "input": "string",
+      "ctx": {}
+    }
+  ]
+}
+No links
+default
+
+
+GET
+/
+Root
+
+Retorna informacion basica del servicio.
+
+Parameters
+Try it out
+No parameters
+
+Responses
+Code	Description	Links
+200	
+Successful Response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+{
+  "additionalProp1": "string",
+  "additionalProp2": "string",
+  "additionalProp3": "string"
+}
+No links
+
+GET
+/health
+Health Check
+
+Health check del servicio.
+
+Parameters
+Try it out
+No parameters
+
+Responses
+Code	Description	Links
+200	
+Successful Response
+
+Media type
+
+application/json
+Controls Accept header.
+Example Value
+Schema
+{
+  "additionalProp1": "string",
+  "additionalProp2": "string",
+  "additionalProp3": "string"
+}
+No links
+
+Schemas
+DescontarDetalleExpand allobject
+DescontarItemExpand allobject
+DescontarStockRequestExpand allobject
+DescontarStockResponseExpand allobject
+HTTPValidationErrorExpand allobject
+IngredienteCreateExpand allobject
+IngredienteResponseExpand allobject
+IngredienteUpdateExpand allobject
+MessageResponseExpand allobject
+MovimientoCreateExpand allobject
+MovimientoResponseExpand allobject
+ValidationErrorExpand allobject

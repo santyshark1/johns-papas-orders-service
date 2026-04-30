@@ -33,7 +33,9 @@ export async function getIngredientes(params?: {
     return normalizeListResponse<Ingrediente>(response.data);
   } catch (error) {
     const message = extractErrorMessage(error);
-    throw new Error(`Error al obtener ingredientes: ${message}`);
+    const err = new Error(`Error al obtener ingredientes: ${message}`);
+    (err as any).status = (error as any)?.status;
+    throw err;
   }
 }
 
@@ -50,7 +52,9 @@ export async function getIngredienteById(
     return response.data;
   } catch (error) {
     const message = extractErrorMessage(error);
-    throw new Error(`Error al obtener ingrediente: ${message}`);
+    const err = new Error(`Error al obtener ingrediente: ${message}`);
+    (err as any).status = (error as any)?.status;
+    throw err;
   }
 }
 
@@ -68,7 +72,9 @@ export async function createIngrediente(
     return response.data;
   } catch (error) {
     const message = extractErrorMessage(error);
-    throw new Error(`Error al crear ingrediente: ${message}`);
+    const err = new Error(`Error al crear ingrediente: ${message}`);
+    (err as any).status = (error as any)?.status;
+    throw err;
   }
 }
 
@@ -87,7 +93,9 @@ export async function updateIngrediente(
     return response.data;
   } catch (error) {
     const message = extractErrorMessage(error);
-    throw new Error(`Error al actualizar ingrediente: ${message}`);
+    const err = new Error(`Error al actualizar ingrediente: ${message}`);
+    (err as any).status = (error as any)?.status;
+    throw err;
   }
 }
 
@@ -110,7 +118,9 @@ export async function getMovimientos(params?: {
     return normalizeListResponse<MovimientoInventario>(response.data);
   } catch (error) {
     const message = extractErrorMessage(error);
-    throw new Error(`Error al obtener movimientos: ${message}`);
+    const err = new Error(`Error al obtener movimientos: ${message}`);
+    (err as any).status = (error as any)?.status;
+    throw err;
   }
 }
 
@@ -128,7 +138,9 @@ export async function createMovimiento(
     return response.data;
   } catch (error) {
     const message = extractErrorMessage(error);
-    throw new Error(`Error al registrar movimiento: ${message}`);
+    const err = new Error(`Error al registrar movimiento: ${message}`);
+    (err as any).status = (error as any)?.status;
+    throw err;
   }
 }
 
@@ -147,6 +159,8 @@ export async function descontarStock(
     return response.data;
   } catch (error) {
     const message = extractErrorMessage(error);
-    throw new Error(`Error al descontar stock: ${message}`);
+    const err = new Error(`Error al descontar stock: ${message}`);
+    (err as any).status = (error as any)?.status;
+    throw err;
   }
 }

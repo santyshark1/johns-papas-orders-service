@@ -170,6 +170,8 @@ axiosClient.interceptors.response.use(
       errorMessage = "No tienes permisos para realizar esta acción.";
     } else if (error.response?.status === 404) {
       errorMessage = "El recurso solicitado no existe.";
+    } else if (error.response?.status === 429) {
+      errorMessage = "Demasiadas solicitudes. Espera un momento e intenta de nuevo.";
     } else if (error.response?.status === 400) {
       errorMessage = extractErrorMessage(error.response?.data);
     } else if (error.response?.status && error.response.status >= 500) {
