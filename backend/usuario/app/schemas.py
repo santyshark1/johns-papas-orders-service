@@ -196,6 +196,21 @@ class PermisoResponse(BaseModel):
 	}
 
 
+# Esquema para actualizar datos de un usuario.
+class UsuarioUpdate(BaseModel):
+	nombre: str | None = None
+	email: EmailStr | None = None
+	password: str | None = None
+	roles: list[str] | None = None
+
+	@field_validator("email", mode="before")
+	@classmethod
+	def normalize_email(cls, value: object) -> object:
+		if isinstance(value, str):
+			return value.strip().lower()
+		return value
+
+
 # Esquema para asignar un rol a un usuario.
 class AssignRoleRequest(BaseModel):
 	usuario_id: UUID

@@ -26,7 +26,7 @@ CREATE TABLE pedidos (
     cliente_id       UUID        NOT NULL,
     cliente_nombre   VARCHAR(255) NOT NULL,
     cliente_email    VARCHAR(255) NOT NULL,
-    cliente_telefono VARCHAR(10)  NOT NULL,
+    cliente_telefono VARCHAR(20)  NOT NULL,
 
     tienda_id        UUID        NOT NULL,
     tienda_nombre    VARCHAR(255) NOT NULL,
@@ -216,6 +216,12 @@ CREATE TABLE IF NOT EXISTS historial_estados_pedido (
 
 CREATE INDEX IF NOT EXISTS ix_historial_pedido_cambiado_en
 ON historial_estados_pedido (pedido_id, cambiado_en);
+
+-- =========================
+-- FIX TELEFONO (VARCHAR 10 -> 20)
+-- =========================
+ALTER TABLE pedidos
+ALTER COLUMN cliente_telefono TYPE VARCHAR(20);
 
 
 

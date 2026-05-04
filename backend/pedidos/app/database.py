@@ -14,6 +14,8 @@ def _normalize_database_url(database_url: str) -> str:
 		return database_url
 	if database_url.startswith("postgresql://"):
 		return database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+	if database_url.startswith("postgres://"):
+		return database_url.replace("postgres://", "postgresql+asyncpg://", 1)
 	return database_url
 
 
@@ -25,6 +27,7 @@ engine = create_async_engine(
 	max_overflow=10,
 	pool_pre_ping=True,
 	pool_recycle=1800,
+	connect_args={"statement_cache_size": 0},
 )
 
 AsyncSessionLocal = sessionmaker(

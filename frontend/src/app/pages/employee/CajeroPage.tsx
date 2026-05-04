@@ -17,7 +17,9 @@ const categories = [
   { name: 'Bebidas', icon: Coffee },
 ];
 
-const pizzas = [
+type Product = { id: string; name: string; sku: string; image: string; price: number };
+
+const pizzas: Product[] = [
   { id: 'p1', name: 'Pepperoni', sku: 'PIZZA-PEPP', image: 'https://images.unsplash.com/photo-1762922425310-cf31b9befba0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwZXBwZXJvbmklMjBwaXp6YSUyMHdvb2RlbiUyMHRhYmxlfGVufDF8fHx8MTc3MzEwMTQzNHww&ixlib=rb-4.1.0&q=80&w=1080', price: 45000 },
   { id: 'p2', name: 'Hawaiana', sku: 'PIZZA-HAW', image: 'https://images.unsplash.com/photo-1671572579989-fa11cbd86eef?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoYXdhaWlhbiUyMHBpenphJTIwcGluZWFwcGxlJTIwaGFtfGVufDF8fHx8MTc3MzEwMTQzNXww&ixlib=rb-4.1.0&q=80&w=1080', price: 48000 },
   { id: 'p3', name: 'Champiñana', sku: 'PIZZA-CHAMP', image: 'https://images.unsplash.com/photo-1530632789071-8543f47edb34?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtdXNocm9vbSUyMHBpenphJTIwZnJlc2glMjBoZXJic3xlbnwxfHx8fDE3NzMxMDE0MzV8MA&ixlib=rb-4.1.0&q=80&w=1080', price: 42000 },
@@ -25,6 +27,28 @@ const pizzas = [
   { id: 'p5', name: 'Vegetariana', sku: 'PIZZA-VEG', image: 'https://images.unsplash.com/photo-1624633431700-b0912297c13a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx2ZWdldGFyaWFuJTIwcGl6emElMjB2ZWdldGFibGVzfGVufDF8fHx8MTc3MzA4MTY5NHww&ixlib=rb-4.1.0&q=80&w=1080', price: 40000 },
   { id: 'p6', name: 'Mitad y Mitad', sku: 'PIZZA-MYM', image: 'https://images.unsplash.com/photo-1645530654927-a198eff22252?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoYWxmJTIwaGFsZiUyMHBpenphJTIwdHdvJTIwZmxhdm9yc3xlbnwxfHx8fDE3NzMxMDE0Mzd8MA&ixlib=rb-4.1.0&q=80&w=1080', price: 50000 },
 ];
+
+const postres: Product[] = [
+  { id: 'PS-001', sku: 'PSTIRAM', name: 'Tiramisu', price: 18000, image: 'https://images.unsplash.com/photo-1768225385872-03945d45a0d3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0aXJhbWlzdSUyMGRlc3NlcnQlMjBwbGF0ZXxlbnwxfHx8fDE3NzMwNjI5ODR8MA&ixlib=rb-4.1.0&q=80&w=1080' },
+  { id: 'PS-002', sku: 'PSBROWN', name: 'Brownie con Helado', price: 16000, image: 'https://images.unsplash.com/photo-1570145820259-b5b80c5c8bd6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjaG9jb2xhdGUlMjBicm93bmllJTIwZGVzc2VydHxlbnwxfHx8fDE3NzI5ODkwMzV8MA&ixlib=rb-4.1.0&q=80&w=1080' },
+];
+
+const adiciones: Product[] = [
+  { id: 'AD-001', sku: 'ADPANAJ', name: 'Pan de Ajo', price: 10000, image: 'https://images.unsplash.com/photo-1633030318854-b076ff72770f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxnYXJsaWMlMjBicmVhZCUyMGJhc2tldHxlbnwxfHx8fDE3NzMwODUwMjh8MA&ixlib=rb-4.1.0&q=80&w=1080' },
+  { id: 'AD-002', sku: 'ADALITAS', name: 'Alitas de Pollo', price: 22000, image: 'https://images.unsplash.com/photo-1535902491948-06a40e45ed95?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjaGlja2VuJTIwd2luZ3MlMjBwbGF0ZXxlbnwxfHx8fDE3NzMwNTAwNzJ8MA&ixlib=rb-4.1.0&q=80&w=1080' },
+];
+
+const bebidas: Product[] = [
+  { id: 'BE-001', sku: 'BECOCA', name: 'Coca Cola', price: 5000, image: 'https://images.unsplash.com/photo-1734605641773-f2755bf7432d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzb2RhJTIwY29sYSUyMGJvdHRsZXxlbnwxfHx8fDE3NzMxMDI1MTV8MA&ixlib=rb-4.1.0&q=80&w=1080' },
+  { id: 'BE-002', sku: 'BELIMON', name: 'Limonada Natural', price: 6000, image: 'https://images.unsplash.com/photo-1523677011781-c91d1bbe2f9d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsZW1vbmFkZSUyMGdsYXNzJTIwZnJlc2h8ZW58MXx8fHwxNzMzMDE4NjQzfDA&ixlib=rb-4.1.0&q=80&w=1080' },
+];
+
+const productsByCategory: Record<string, Product[]> = {
+  Pizzas: pizzas,
+  Postres: postres,
+  Adiciones: adiciones,
+  Bebidas: bebidas,
+};
 
 interface CartItem { id: string; name: string; sku: string; quantity: number; price: number }
 
@@ -41,7 +65,7 @@ export function CajeroPage() {
     calle: '', ciudad: '', numero1: '', numero2: '',
   });
 
-  function addToCart(p: typeof pizzas[0]) {
+  function addToCart(p: Product) {
     setCart(prev => {
       const ex = prev.find(it => it.id === p.id);
       if (ex) return prev.map(it => it.id === p.id ? { ...it, quantity: it.quantity + 1 } : it);
@@ -178,12 +202,12 @@ export function CajeroPage() {
 
             <div className="lg:col-span-3">
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-                {pizzas.map((pizza) => (
-                  <button key={pizza.id} onClick={() => addToCart(pizza)}
+                {(productsByCategory[selectedCategory] ?? []).map((product) => (
+                  <button key={product.id} onClick={() => addToCart(product)}
                     className="bg-white rounded-xl p-4 hover:shadow-lg transition">
-                    <img src={pizza.image} alt={pizza.name} className="w-full aspect-square object-cover rounded-full mb-3" />
-                    <p className="text-center text-[#5C3D1E] text-sm">{pizza.name}</p>
-                    <p className="text-center text-[#D4A017] text-xs">${pizza.price.toLocaleString('es-CO')}</p>
+                    <img src={product.image} alt={product.name} className="w-full aspect-square object-cover rounded-full mb-3" />
+                    <p className="text-center text-[#5C3D1E] text-sm">{product.name}</p>
+                    <p className="text-center text-[#D4A017] text-xs">${product.price.toLocaleString('es-CO')}</p>
                   </button>
                 ))}
               </div>

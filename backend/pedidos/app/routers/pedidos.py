@@ -34,7 +34,7 @@ router = APIRouter(prefix="/pedidos", tags=["pedidos"])
 
 def _generate_numero_orden() -> str:
 	"""Genera un numero de orden unico."""
-	timestamp = dt.datetime.utcnow().strftime("%Y%m%d%H%M%S")
+	timestamp = dt.datetime.utcnow().strftime("%y%m%d%H%M%S")
 	return f"ORD-{timestamp}-{secrets.randbelow(1000):03d}"
 
 
@@ -285,6 +285,32 @@ async def listar_pedidos(
 		raise HTTPException(
 			status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
 			detail="Error al obtener los pedidos. Intenta de nuevo.",
+		) from exc
+
+
+@router.get("/todos", response_model=list[PedidoResponse])
+async def listar_todos_pedidos(
+	current_user_id: str = Depends(get_current_user_id),
+	session: AsyncSession = Depends(get_db),
+) -> list[PedidoResponse]:
+	"""Lista todos los pedidos sin filtrar por cliente (vista admin/empleado)."""
+	try:
+		result = await session.execute(
+			select(Pedido)
+			.order_by(Pedido.creado_en.desc())
+			.options(
+				selectinload(Pedido.items).selectinload(ItemPedido.opciones_seleccionadas),
+				selectinload(Pedido.direcciones_servicio),
+			)
+		)
+		pedidos = result.scalars().all()
+		return [_build_pedido_response(pedido) for pedido in pedidos]
+	except HTTPException:
+		raise
+	except Exception as exc:
+		raise HTTPException(
+			status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+			detail="Error al obtener los pedidos.",
 		) from exc
 
 

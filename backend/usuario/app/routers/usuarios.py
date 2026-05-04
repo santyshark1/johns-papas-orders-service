@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+import uuid
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -7,9 +9,10 @@ from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.auth import hash_password
 from app.deps import get_current_user_dep
 from app.models import Rol, Usuario, UsuarioRol
-from app.schemas import AssignRoleRequest, MessageResponse, UsuarioResponse
+from app.schemas import AssignRoleRequest, MessageResponse, UsuarioResponse, UsuarioUpdate
 from app.database import get_db
 
  
@@ -58,6 +61,58 @@ async def get_usuario_by_id(
 			status_code=status.HTTP_404_NOT_FOUND,
 			detail="Usuario no encontrado",
 		)
+	return _build_usuario_response(usuario)
+
+
+@router.put("/{usuario_id}", response_model=UsuarioResponse)
+async def update_usuario(
+	usuario_id: UUID,
+	data: UsuarioUpdate,
+	_: Usuario = Depends(get_current_user_dep),
+	db: AsyncSession = Depends(get_db),
+) -> UsuarioResponse:
+	stmt = (
+		select(Usuario)
+		.where(Usuario.id == usuario_id)
+		.options(selectinload(Usuario.roles))
+	)
+	result = await db.execute(stmt)
+	usuario = result.scalars().first()
+	if not usuario:
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
+
+	if data.nombre is not None:
+		usuario.nombre = data.nombre
+	if data.email is not None:
+		conflict = await db.execute(
+			select(Usuario).where(Usuario.email == data.email, Usuario.id != usuario_id)
+		)
+		if conflict.scalars().first():
+			raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email ya en uso")
+		usuario.email = data.email
+	if data.password is not None:
+		usuario.password_hash = hash_password(data.password)
+
+	if data.roles is not None:
+		await db.execute(delete(UsuarioRol).where(UsuarioRol.usuario_id == usuario_id))
+		default_tienda = uuid.UUID(
+			os.getenv("DEFAULT_TIENDA_ID", "00000000-0000-0000-0000-000000000001")
+		)
+		for role_name in data.roles:
+			role_result = await db.execute(select(Rol).where(Rol.nombre == role_name))
+			rol = role_result.scalars().first()
+			if rol:
+				db.add(UsuarioRol(usuario_id=usuario_id, rol_id=rol.id, tienda_id=default_tienda))
+
+	await db.commit()
+
+	stmt = (
+		select(Usuario)
+		.where(Usuario.id == usuario_id)
+		.options(selectinload(Usuario.roles))
+	)
+	result = await db.execute(stmt)
+	usuario = result.scalars().first()
 	return _build_usuario_response(usuario)
 
 

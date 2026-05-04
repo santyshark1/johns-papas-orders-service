@@ -65,7 +65,7 @@ export function PedidosPage() {
     setLoading(true);
     setError('');
     const token = localStorage.getItem('token');
-    const res = await fetch(`${PEDIDOS_API}/pedidos`, {
+    const res = await fetch(`${PEDIDOS_API}/pedidos/todos`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     }).catch(() => null);
     if (res?.ok) {
