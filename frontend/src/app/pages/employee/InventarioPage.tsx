@@ -3,12 +3,14 @@
 import { useState } from 'react';
 import { EmployeeSidebar } from '../../components/EmployeeSidebar';
 import { EmployeeTopBar } from '../../components/EmployeeTopBar';
-import { Plus, Edit, Trash2, Package, X, AlertCircle, Loader } from 'lucide-react';
+import { Plus, Edit, Package, X, AlertCircle, Loader, RefreshCw } from 'lucide-react';
 import {
   useIngredientes,
   useCreateIngrediente,
   useUpdateIngrediente,
 } from '@/services/inventario/useInventario';
+import { useQueryClient } from '@tanstack/react-query';
+import { QUERY_KEYS } from '@/shared/constants/api';
 import { Ingrediente } from '@/shared/types/api';
 
 interface FormData {
@@ -32,10 +34,14 @@ const statusColors: Record<string, string> = {
 const emptyForm: FormData = { nombre: '', stock_actual: 0, costo_unitario: 0 };
 
 export function InventarioPage() {
-  // Queries y mutations
+  const queryClient = useQueryClient();
   const { data: ingredientes = [], isLoading, error } = useIngredientes();
   const createMutation = useCreateIngrediente();
   const updateMutation = useUpdateIngrediente();
+
+  function handleRetry() {
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.ingredientes.lists() });
+  }
 
   // Estado del formulario
   const [showModal, setShowModal] = useState(false);
@@ -137,6 +143,13 @@ export function InventarioPage() {
                 <p className="font-medium text-red-900">Error al cargar inventario</p>
                 <p className="text-sm text-red-700">{error instanceof Error ? error.message : 'Error desconocido'}</p>
               </div>
+              <button
+                onClick={handleRetry}
+                className="flex items-center gap-1 px-3 py-1.5 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition flex-shrink-0"
+              >
+                <RefreshCw size={14} />
+                Reintentar
+              </button>
             </div>
           )}
 

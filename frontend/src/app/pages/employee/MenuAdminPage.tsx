@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { EmployeeSidebar } from '../../components/EmployeeSidebar';
 import { EmployeeTopBar } from '../../components/EmployeeTopBar';
 import { Plus, Edit, Trash2, X } from 'lucide-react';
+
+const STORAGE_KEY = 'menu_admin_products';
 
 const categories = ['Pizzas', 'Postres', 'Adiciones', 'Bebidas'];
 
@@ -27,9 +29,21 @@ const initialProducts: Product[] = [
 
 const emptyProduct: Product = { name: '', price: '', image: '', category: 'Pizzas', active: true, description: '' };
 
+function loadFromStorage(): Product[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw) as Product[];
+  } catch { /* ignore */ }
+  return initialProducts;
+}
+
 export function MenuAdminPage() {
   const [selectedCategory, setSelectedCategory] = useState('Pizzas');
-  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [products, setProducts] = useState<Product[]>(loadFromStorage);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+  }, [products]);
   const [showModal, setShowModal] = useState(false);
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
   const [form, setForm] = useState<Product>(emptyProduct);

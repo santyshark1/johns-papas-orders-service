@@ -82,10 +82,12 @@ export function DashboardClientPage() {
     }
     if (!clienteId) { setLoading(false); return; }
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
     const res = await fetch(
       `/api-proxy/pedidos-svc/pedidos`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    ).catch(() => null);
+      { headers: { Authorization: `Bearer ${token}` }, signal: controller.signal }
+    ).catch(() => null).finally(() => clearTimeout(timeoutId));
 
     if (res?.ok) {
       const json = await res.json();
