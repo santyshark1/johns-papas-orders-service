@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { EmployeeSidebar } from '../../components/EmployeeSidebar';
 import { EmployeeTopBar } from '../../components/EmployeeTopBar';
-import { Plus, Edit, Trash2, Search, User, X, RefreshCw } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, User, X, RefreshCw, AlertCircle } from 'lucide-react';
 
 const USUARIO_API = 'https://usuario-service-7rbo.onrender.com';
 
@@ -292,7 +292,12 @@ export function EmpleadosPage() {
                   className="w-full px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-[#D4A017] focus:outline-none bg-[#FDF6EC]"
                 />
               </div>
-              {formError && <p className="text-red-600 text-sm">{formError}</p>}
+              {formError && (
+                <div className="flex items-center gap-3 bg-red-50 border border-red-200 text-red-800 rounded-lg px-4 py-3 text-sm">
+                  <AlertCircle size={16} className="flex-shrink-0 text-red-600" />
+                  <span>{formError}</span>
+                </div>
+              )}
               <button onClick={handleSave} disabled={saving}
                 className="w-full py-3 bg-[#D4A017] text-[#5C3D1E] rounded-lg hover:bg-[#D4A017]/90 transition disabled:opacity-60">
                 {saving ? 'Guardando...' : 'Guardar'}

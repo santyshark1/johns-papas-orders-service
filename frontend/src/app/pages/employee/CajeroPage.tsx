@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { EmployeeSidebar } from '../../components/EmployeeSidebar';
 import { EmployeeTopBar } from '../../components/EmployeeTopBar';
-import { Pizza, Cake, Plus, Coffee, ShoppingCart, X, Trash2, CheckCircle } from 'lucide-react';
+import { Pizza, Cake, Plus, Coffee, ShoppingCart, X, Trash2, CheckCircle, AlertCircle } from 'lucide-react';
 import { jwtDecode } from 'jwt-decode';
 
 const PEDIDOS_API = 'https://pedidos-service-bwn3.onrender.com';
@@ -314,7 +314,12 @@ export function CajeroPage() {
               </div>
             </div>
 
-            {checkoutError && <p className="text-red-600 text-sm mb-3">{checkoutError}</p>}
+            {checkoutError && (
+              <div className="flex items-center gap-3 bg-red-50 border border-red-200 text-red-800 rounded-lg px-4 py-3 text-sm mb-3">
+                <AlertCircle size={16} className="flex-shrink-0 text-red-600" />
+                <span>{checkoutError}</span>
+              </div>
+            )}
 
             <button onClick={handlePagar} disabled={submitting}
               className="w-full py-3 bg-[#D4A017] text-[#5C3D1E] rounded-lg hover:bg-[#D4A017]/90 transition disabled:opacity-60 flex items-center justify-center gap-2">

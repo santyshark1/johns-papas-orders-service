@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Minus, X, ShoppingCart, CheckCircle } from 'lucide-react';
+import { Plus, Minus, X, ShoppingCart, CheckCircle, AlertCircle } from 'lucide-react';
 import { ClientSidebar } from '../../components/ClientSidebar';
 import { ClientTopBar } from '../../components/ClientTopBar';
 import { jwtDecode } from 'jwt-decode';
@@ -318,7 +318,12 @@ function ConfirmModal({ cart, onClose, onSuccess }: {
             </div>
           )}
 
-          {error && <p className="text-xs text-red-500">{error}</p>}
+          {error && (
+            <div className="flex items-center gap-3 bg-red-50 border border-red-200 text-red-800 rounded-lg px-4 py-3 text-sm">
+              <AlertCircle size={16} className="flex-shrink-0 text-red-600" />
+              <span>{error}</span>
+            </div>
+          )}
 
           <button
             onClick={handleSubmit}

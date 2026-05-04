@@ -4,7 +4,7 @@ import type { FormEvent } from 'react';
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { Eye, EyeOff, ArrowLeft, AlertCircle } from 'lucide-react';
 import { jwtDecode } from 'jwt-decode';
 import { useAuthStore } from '@/shared/store/authStore';
 
@@ -180,7 +180,12 @@ export function LoginPage() {
             </div>
           </div>
 
-          {error && <p className="text-red-600 text-sm text-center">{error}</p>}
+          {error && (
+            <div className="flex items-center gap-3 bg-red-50 border border-red-200 text-red-800 rounded-lg px-4 py-3 text-sm">
+              <AlertCircle size={16} className="flex-shrink-0 text-red-600" />
+              <span>{error}</span>
+            </div>
+          )}
 
           <button
             type="submit"
