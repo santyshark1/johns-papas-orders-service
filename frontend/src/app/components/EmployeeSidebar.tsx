@@ -14,7 +14,8 @@ import {
   Menu,
   X
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
 const PEDIDOS_API = '/api-proxy/pedidos-svc';
 
@@ -31,21 +32,22 @@ const menuItems = [
 export function EmployeeSidebar() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [pendingCount, setPendingCount] = useState(0);
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    fetch(`${PEDIDOS_API}/pedidos`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    })
-      .then(r => (r.ok ? r.json() : null))
-      .then(data => {
-        if (!data) return;
-        const arr: { estado?: string }[] = Array.isArray(data) ? data : (data.items ?? data.data ?? []);
-        setPendingCount(arr.filter(o => o.estado?.toUpperCase() === 'PENDIENTE').length);
-      })
-      .catch(() => {});
-  }, []);
+  const { data: pendingCount = 0 } = useQuery({
+    queryKey: ['sidebar-pedidos-pendientes'],
+    queryFn: async () => {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${PEDIDOS_API}/pedidos`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!res.ok) return 0;
+      const data = await res.json();
+      const arr: { estado?: string }[] = Array.isArray(data) ? data : (data.items ?? data.data ?? []);
+      return arr.filter(o => o.estado?.toUpperCase() === 'PENDIENTE').length;
+    },
+    staleTime: 2 * 60 * 1000,
+    retry: false,
+  });
 
   const SidebarContent = () => (
     <>
