@@ -32,7 +32,7 @@ async function refreshAccessToken(
 
 export const axiosClient = axios.create({
   baseURL,
-  timeout: 15000,
+  timeout: 60000,
   headers: {
     "Content-Type": "application/json",
   },
@@ -165,7 +165,7 @@ axiosClient.interceptors.response.use(
     if (isNetworkError(error)) {
       errorMessage = "Error de conexión. Por favor verifica tu conexión a internet.";
     } else if (isTimeoutError(error)) {
-      errorMessage = "La solicitud tardó demasiado. Por favor intenta de nuevo.";
+      errorMessage = "El servicio está iniciando, espera unos segundos e intenta de nuevo.";
     } else if (error.response?.status === 403) {
       errorMessage = "No tienes permisos para realizar esta acción.";
     } else if (error.response?.status === 404) {
