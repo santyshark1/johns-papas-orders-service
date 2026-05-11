@@ -5,7 +5,7 @@ import { EmployeeSidebar } from '../../components/EmployeeSidebar';
 import { EmployeeTopBar } from '../../components/EmployeeTopBar';
 import { RefreshCw, Eye, X } from 'lucide-react';
 
-const PEDIDOS_API = 'https://pedidos-service-bwn3.onrender.com';
+const PEDIDOS_API = '/api-proxy/pedidos-svc';
 
 const filters = ['Todos', 'Pendientes', 'En Preparación', 'Listos', 'Entregados', 'Domicilios'];
 
@@ -20,10 +20,22 @@ const filterMap: Record<string, (o: Order) => boolean> = {
 
 const statusColors: Record<string, string> = {
   entregado: 'bg-green-100 text-green-800',
-  en_preparacion: 'bg-orange-100 text-orange-800',
-  listo: 'bg-yellow-100 text-yellow-800',
-  pendiente: 'bg-blue-100 text-blue-800',
+  en_proceso: 'bg-orange-100 text-orange-800',
+  enviado: 'bg-purple-100 text-purple-800',
+  completado: 'bg-teal-100 text-teal-800',
+  cancelado: 'bg-red-100 text-red-800',
+  borrador: 'bg-blue-100 text-blue-800',
+  fallido: 'bg-gray-100 text-gray-800',
 };
+
+const STATUS_OPTIONS = [
+  { value: 'EN_PROCESO', label: 'En proceso' },
+  { value: 'ENVIADO', label: 'Enviado' },
+  { value: 'ENTREGADO', label: 'Entregado' },
+  { value: 'COMPLETADO', label: 'Completado' },
+  { value: 'CANCELADO', label: 'Cancelado' },
+];
+
 
 interface OrderItem {
   nombre_producto_snapshot: string;
@@ -60,6 +72,8 @@ export function PedidosPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [detail, setDetail] = useState<Order | null>(null);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [statusError, setStatusError] = useState('');
 
   async function load() {
     setLoading(true);
@@ -82,6 +96,26 @@ export function PedidosPage() {
   }
 
   useEffect(() => { load(); }, []);
+
+  async function handleStatusChange(newEstado: string) {
+    if (!detail?.id || updatingStatus) return;
+    setUpdatingStatus(true);
+    setStatusError('');
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${PEDIDOS_API}/pedidos/${detail.id}/estado`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      body: JSON.stringify({ estado: newEstado, razon: '' }),
+    }).catch(() => null);
+    if (res?.ok) {
+      const updated = { ...detail, estado: newEstado };
+      setDetail(updated);
+      setOrders(prev => prev.map(o => o.id === detail.id ? updated : o));
+    } else {
+      setStatusError('No se pudo actualizar el estado');
+    }
+    setUpdatingStatus(false);
+  }
 
   const filtered = orders.filter(filterMap[selectedFilter] ?? (() => true));
 
@@ -150,7 +184,7 @@ export function PedidosPage() {
                   {filtered.map((order, i) => (
                     <tr key={order.id ?? i} className="hover:bg-[#FDF6EC]/50">
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-[#5C3D1E]">
-                        #{(order.numero_orden ?? order.id ?? '—').slice(0, 8).toUpperCase()}
+                        {order.numero_orden ?? order.id ?? '—'}
                       </td>
                       <td className="px-4 py-3 text-sm text-[#5C3D1E]">{order.cliente_nombre ?? '—'}</td>
                       <td className="px-4 py-3 text-sm text-[#5C3D1E] max-w-[180px] truncate">
@@ -189,7 +223,7 @@ export function PedidosPage() {
           <div className="bg-white rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl text-[#5C3D1E]" style={{ fontFamily: 'Playfair Display, serif' }}>
-                Pedido #{(detail.numero_orden ?? detail.id ?? '').slice(0, 8).toUpperCase()}
+                {detail.numero_orden ?? detail.id ?? ''}
               </h3>
               <button onClick={() => setDetail(null)}><X size={22} className="text-[#8B6F47]" /></button>
             </div>
@@ -197,8 +231,27 @@ export function PedidosPage() {
               <p><span className="text-[#8B6F47]">Cliente:</span> {detail.cliente_nombre}</p>
               <p><span className="text-[#8B6F47]">Email:</span> {detail.cliente_email}</p>
               <p><span className="text-[#8B6F47]">Entrega:</span> {detail.entrega}</p>
-              <p><span className="text-[#8B6F47]">Estado:</span> {detail.estado}</p>
               <p><span className="text-[#8B6F47]">Fecha:</span> {formatFecha(detail.creado_en)}</p>
+            </div>
+            <div className="mb-4">
+              <p className="text-sm text-[#8B6F47] mb-2">Estado</p>
+              <div className="flex flex-wrap gap-2">
+                {STATUS_OPTIONS.map(opt => (
+                  <button
+                    key={opt.value}
+                    disabled={updatingStatus}
+                    onClick={() => handleStatusChange(opt.value)}
+                    className={`px-3 py-1.5 rounded-full text-xs transition disabled:opacity-50 ${
+                      detail.estado?.toUpperCase() === opt.value
+                        ? (statusColors[opt.value.toLowerCase()] ?? 'bg-gray-200 text-gray-800') + ' ring-2 ring-offset-1 ring-current font-semibold'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    {opt.label}{detail.estado?.toUpperCase() === opt.value ? ' ✓' : ''}
+                  </button>
+                ))}
+              </div>
+              {statusError && <p className="text-xs text-red-600 mt-2">{statusError}</p>}
             </div>
             <table className="w-full text-sm mb-4">
               <thead><tr className="bg-[#FDF6EC]">

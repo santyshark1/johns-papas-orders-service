@@ -27,6 +27,7 @@ def _build_usuario_response(usuario: Usuario) -> UsuarioResponse:
 		nombre=usuario.nombre,
 		email=usuario.email,
 		roles=roles,
+		telefono=usuario.telefono,
 	)
 
 
@@ -83,6 +84,8 @@ async def update_usuario(
 
 	if data.nombre is not None:
 		usuario.nombre = data.nombre
+	if data.telefono is not None:
+		usuario.telefono = data.telefono
 	if data.email is not None:
 		conflict = await db.execute(
 			select(Usuario).where(Usuario.email == data.email, Usuario.id != usuario_id)

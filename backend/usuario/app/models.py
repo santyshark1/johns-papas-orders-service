@@ -35,6 +35,8 @@ class Usuario(Base):
 	)
 	# Hash de la contrasena del usuario.
 	password_hash: Mapped[str | None] = mapped_column(sa.Text, nullable=True)
+	# Telefono de contacto del usuario.
+	telefono: Mapped[str | None] = mapped_column(sa.String(30), nullable=True)
 
 	# Relacion N:M con roles a traves de usuario_roles.
 	roles: Mapped[list["Rol"]] = relationship(

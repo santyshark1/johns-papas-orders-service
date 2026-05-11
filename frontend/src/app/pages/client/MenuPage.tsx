@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Minus, X, ShoppingCart, CheckCircle, AlertCircle } from 'lucide-react';
 import { ClientSidebar } from '../../components/ClientSidebar';
 import { ClientTopBar } from '../../components/ClientTopBar';
 import { jwtDecode } from 'jwt-decode';
+import type { Product as AdminProduct } from '../employee/MenuAdminPage';
 
 interface JwtPayload {
   sub?: string;
@@ -13,9 +14,10 @@ interface JwtPayload {
   [key: string]: unknown;
 }
 
-const PEDIDOS_API = 'https://pedidos-service-bwn3.onrender.com';
+const PEDIDOS_API = '/api-proxy/pedidos-svc';
 const TIENDA_ID = 'e1b4d9f5-4d98-4b4e-8f77-9e71f6b4b0d2';
 const TIENDA_NOMBRE = 'Johns Papas';
+const STORAGE_KEY = 'menu_admin_products';
 
 const categories = ['Pizzas', 'Postres', 'Adiciones', 'Bebidas'];
 
@@ -26,74 +28,40 @@ type Product = {
   description: string;
   price: number;
   image: string;
+  category: string;
 };
 
-const pizzas: Product[] = [
-  {
-    id: 'PZ-001', sku: 'PZPEPP', name: 'Pepperoni', price: 45000,
-    description: 'Salsa de tomate, mozzarella y pepperoni',
-    image: 'https://images.unsplash.com/photo-1762922425310-cf31b9befba0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwZXBwZXJvbmklMjBwaXp6YSUyMHdvb2RlbiUyMHRhYmxlfGVufDF8fHx8MTc3MzEwMTQzNHww&ixlib=rb-4.1.0&q=80&w=1080',
-  },
-  {
-    id: 'PZ-002', sku: 'PZHAW', name: 'Hawaiana', price: 48000,
-    description: 'Jamón, piña, mozzarella y salsa especial',
-    image: 'https://images.unsplash.com/photo-1671572579989-fa11cbd86eef?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoYXdhaWlhbiUyMHBpenphJTIwcGluZWFwcGxlJTIwaGFtfGVufDF8fHx8MTc3MzEwMTQzNXww&ixlib=rb-4.1.0&q=80&w=1080',
-  },
-  {
-    id: 'PZ-003', sku: 'PZVEG', name: 'Vegetariana', price: 40000,
-    description: 'Vegetales frescos y mozzarella',
-    image: 'https://images.unsplash.com/photo-1624633431700-b0912297c13a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx2ZWdldGFyaWFuJTIwcGl6emElMjB2ZWdldGFibGVzfGVufDF8fHx8MTc3MzA4MTY5NHww&ixlib=rb-4.1.0&q=80&w=1080',
-  },
+const fallbackProducts: Product[] = [
+  { id: 'PZ-001', sku: 'PZPEPP',  name: 'Pepperoni',        price: 45000, category: 'Pizzas',   description: 'Salsa de tomate, mozzarella y pepperoni', image: 'https://images.unsplash.com/photo-1762922425310-cf31b9befba0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwZXBwZXJvbmklMjBwaXp6YSUyMHdvb2RlbiUyMHRhYmxlfGVufDF8fHx8MTc3MzEwMTQzNHww&ixlib=rb-4.1.0&q=80&w=1080' },
+  { id: 'PZ-002', sku: 'PZHAW',   name: 'Hawaiana',          price: 48000, category: 'Pizzas',   description: 'Jamón, piña, mozzarella y salsa especial', image: 'https://images.unsplash.com/photo-1671572579989-fa11cbd86eef?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoYXdhaWlhbiUyMHBpenphJTIwcGluZWFwcGxlJTIwaGFtfGVufDF8fHx8MTc3MzEwMTQzNXww&ixlib=rb-4.1.0&q=80&w=1080' },
+  { id: 'PZ-003', sku: 'PZVEG',   name: 'Vegetariana',       price: 40000, category: 'Pizzas',   description: 'Vegetales frescos y mozzarella', image: 'https://images.unsplash.com/photo-1624633431700-b0912297c13a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx2ZWdldGFyaWFuJTIwcGl6emElMjB2ZWdldGFibGVzfGVufDF8fHx8MTc3MzA4MTY5NHww&ixlib=rb-4.1.0&q=80&w=1080' },
+  { id: 'PS-001', sku: 'PSTIRAM', name: 'Tiramisu',           price: 18000, category: 'Postres',  description: 'Postre italiano con cafe y mascarpone', image: 'https://images.unsplash.com/photo-1768225385872-03945d45a0d3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0aXJhbWlzdSUyMGRlc3NlcnQlMjBwbGF0ZXxlbnwxfHx8fDE3NzMwNjI5ODR8MA&ixlib=rb-4.1.0&q=80&w=1080' },
+  { id: 'PS-002', sku: 'PSBROWN', name: 'Brownie con Helado', price: 16000, category: 'Postres',  description: 'Brownie caliente con helado de vainilla', image: 'https://images.unsplash.com/photo-1570145820259-b5b80c5c8bd6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjaG9jb2xhdGUlMjBicm93bmllJTIwZGVzc2VydHxlbnwxfHx8fDE3NzI5ODkwMzV8MA&ixlib=rb-4.1.0&q=80&w=1080' },
+  { id: 'AD-001', sku: 'ADPANAJ', name: 'Pan de Ajo',         price: 10000, category: 'Adiciones',description: 'Pan crocante con mantequilla de ajo', image: 'https://images.unsplash.com/photo-1633030318854-b076ff72770f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxnYXJsaWMlMjBicmVhZCUyMGJhc2tldHxlbnwxfHx8fDE3NzMwODUwMjh8MA&ixlib=rb-4.1.0&q=80&w=1080' },
+  { id: 'AD-002', sku: 'ADALITAS',name: 'Alitas de Pollo',    price: 22000, category: 'Adiciones',description: 'Alitas BBQ o picantes', image: 'https://images.unsplash.com/photo-1535902491948-06a40e45ed95?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjaGlja2VuJTIwd2luZ3MlMjBwbGF0ZXxlbnwxfHx8fDE3NzMwNTAwNzJ8MA&ixlib=rb-4.1.0&q=80&w=1080' },
+  { id: 'BE-001', sku: 'BECOCA',  name: 'Coca Cola',          price:  5000, category: 'Bebidas',  description: 'Refresco clasico 355ml', image: 'https://images.unsplash.com/photo-1734605641773-f2755bf7432d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzb2RhJTIwY29sYSUyMGJvdHRsZXxlbnwxfHx8fDE3NzMxMDI1MTV8MA&ixlib=rb-4.1.0&q=80&w=1080' },
+  { id: 'BE-002', sku: 'BELIMON', name: 'Limonada Natural',   price:  6000, category: 'Bebidas',  description: 'Limonada fresca de la casa', image: 'https://images.unsplash.com/photo-1523677011781-c91d1bbe2f9d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsZW1vbmFkZSUyMGdsYXNzJTIwZnJlc2h8ZW58MXx8fHwxNzMzMDE4NjQzfDA&ixlib=rb-4.1.0&q=80&w=1080' },
 ];
 
-const postres: Product[] = [
-  {
-    id: 'PS-001', sku: 'PSTIRAM', name: 'Tiramisu', price: 18000,
-    description: 'Postre italiano con cafe y mascarpone',
-    image: 'https://images.unsplash.com/photo-1768225385872-03945d45a0d3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0aXJhbWlzdSUyMGRlc3NlcnQlMjBwbGF0ZXxlbnwxfHx8fDE3NzMwNjI5ODR8MA&ixlib=rb-4.1.0&q=80&w=1080',
-  },
-  {
-    id: 'PS-002', sku: 'PSBROWN', name: 'Brownie con Helado', price: 16000,
-    description: 'Brownie caliente con helado de vainilla',
-    image: 'https://images.unsplash.com/photo-1570145820259-b5b80c5c8bd6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjaG9jb2xhdGUlMjBicm93bmllJTIwZGVzc2VydHxlbnwxfHx8fDE3NzI5ODkwMzV8MA&ixlib=rb-4.1.0&q=80&w=1080',
-  },
-];
-
-const adiciones: Product[] = [
-  {
-    id: 'AD-001', sku: 'ADPANAJ', name: 'Pan de Ajo', price: 10000,
-    description: 'Pan crocante con mantequilla de ajo',
-    image: 'https://images.unsplash.com/photo-1633030318854-b076ff72770f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxnYXJsaWMlMjBicmVhZCUyMGJhc2tldHxlbnwxfHx8fDE3NzMwODUwMjh8MA&ixlib=rb-4.1.0&q=80&w=1080',
-  },
-  {
-    id: 'AD-002', sku: 'ADALITAS', name: 'Alitas de Pollo', price: 22000,
-    description: 'Alitas BBQ o picantes',
-    image: 'https://images.unsplash.com/photo-1535902491948-06a40e45ed95?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjaGlja2VuJTIwd2luZ3MlMjBwbGF0ZXxlbnwxfHx8fDE3NzMwNTAwNzJ8MA&ixlib=rb-4.1.0&q=80&w=1080',
-  },
-];
-
-const bebidas: Product[] = [
-  {
-    id: 'BE-001', sku: 'BECOCA', name: 'Coca Cola', price: 5000,
-    description: 'Refresco clasico 355ml',
-    image: 'https://images.unsplash.com/photo-1734605641773-f2755bf7432d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzb2RhJTIwY29sYSUyMGJvdHRsZXxlbnwxfHx8fDE3NzMxMDI1MTV8MA&ixlib=rb-4.1.0&q=80&w=1080',
-  },
-  {
-    id: 'BE-002', sku: 'BELIMON', name: 'Limonada Natural', price: 6000,
-    description: 'Limonada fresca de la casa',
-    image: 'https://images.unsplash.com/photo-1523677011781-c91d1bbe2f9d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsZW1vbmFkZSUyMGdsYXNzJTIwZnJlc2h8ZW58MXx8fHwxNzMzMDE4NjQzfDA&ixlib=rb-4.1.0&q=80&w=1080',
-  },
-];
-
-const allProducts = [...pizzas, ...postres, ...adiciones, ...bebidas];
-
-function getByCategory(cat: string): Product[] {
-  switch (cat) {
-    case 'Pizzas': return pizzas;
-    case 'Postres': return postres;
-    case 'Adiciones': return adiciones;
-    case 'Bebidas': return bebidas;
-    default: return pizzas;
+function loadFromStorage(): Product[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return fallbackProducts;
+    const stored: AdminProduct[] = JSON.parse(raw);
+    const active = stored
+      .filter(p => p.active !== false)
+      .map(p => ({
+        id: p.id || `item-${p.name}`,
+        sku: p.sku || p.name.toUpperCase().slice(0, 8),
+        name: p.name,
+        description: p.description || '',
+        price: typeof p.price === 'number' ? p.price : parseInt(String(p.price).replace(/[^0-9]/g, ''), 10) || 0,
+        image: p.image || '',
+        category: p.category || 'Pizzas',
+      }));
+    return active.length > 0 ? active : fallbackProducts;
+  } catch {
+    return fallbackProducts;
   }
 }
 
@@ -112,8 +80,9 @@ interface ConfirmForm {
   numero2: string;
 }
 
-function ConfirmModal({ cart, onClose, onSuccess }: {
+function ConfirmModal({ cart, allProducts, onClose, onSuccess }: {
   cart: Record<string, number>;
+  allProducts: Product[];
   onClose: () => void;
   onSuccess: () => void;
 }) {
@@ -228,7 +197,6 @@ function ConfirmModal({ cart, onClose, onSuccess }: {
         </div>
 
         <div className="p-6 space-y-4">
-          {/* Resumen */}
           <div className="bg-[#FDF6EC] rounded-lg p-4 space-y-1">
             {items.map(p => (
               <div key={p.id} className="flex justify-between text-sm text-[#5C3D1E]">
@@ -242,7 +210,6 @@ function ConfirmModal({ cart, onClose, onSuccess }: {
             </div>
           </div>
 
-          {/* Teléfono */}
           <div>
             <label className="block text-xs text-[#8B6F47] mb-1">Teléfono de contacto *</label>
             <input
@@ -254,7 +221,6 @@ function ConfirmModal({ cart, onClose, onSuccess }: {
             />
           </div>
 
-          {/* Tipo de entrega */}
           <div>
             <label className="block text-xs text-[#8B6F47] mb-2">Tipo de entrega *</label>
             <div className="flex gap-3">
@@ -274,7 +240,6 @@ function ConfirmModal({ cart, onClose, onSuccess }: {
             </div>
           </div>
 
-          {/* Dirección (solo DOMICILIO) */}
           {form.entrega === 'DOMICILIO' && (
             <div className="space-y-2">
               <div>
@@ -363,8 +328,13 @@ export function ClientMenuPage() {
   const [cart, setCart] = useState<Record<string, number>>({});
   const [showConfirm, setShowConfirm] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [allProducts, setAllProducts] = useState<Product[]>(fallbackProducts);
 
-  const products = getByCategory(selectedCategory);
+  useEffect(() => {
+    setAllProducts(loadFromStorage());
+  }, []);
+
+  const products = allProducts.filter(p => p.category === selectedCategory);
   const cartItems = allProducts.filter(p => (cart[p.id] ?? 0) > 0);
   const cartTotal = cartItems.reduce((s, p) => s + p.price * cart[p.id], 0);
   const cartCount = Object.values(cart).reduce((s, q) => s + q, 0);
@@ -426,7 +396,11 @@ export function ClientMenuPage() {
               return (
                 <div key={product.id} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition">
                   <div className="flex justify-center p-6 pb-3">
-                    <img src={product.image} alt={product.name} className="w-40 h-40 object-cover rounded-full" />
+                    {product.image ? (
+                      <img src={product.image} alt={product.name} className="w-40 h-40 object-cover rounded-full" />
+                    ) : (
+                      <div className="w-40 h-40 rounded-full bg-[#FDF6EC] flex items-center justify-center text-4xl">🍕</div>
+                    )}
                   </div>
                   <div className="p-6 pt-0 text-center">
                     <h3 className="text-xl mb-2 text-[#5C3D1E]" style={{ fontFamily: 'Playfair Display, serif' }}>
@@ -463,10 +437,12 @@ export function ClientMenuPage() {
                 </div>
               );
             })}
+            {products.length === 0 && (
+              <p className="col-span-3 text-center text-[#8B6F47] py-12">Sin productos en esta categoría</p>
+            )}
           </div>
         </div>
 
-        {/* Cart bar */}
         {cartCount > 0 && (
           <div className="fixed bottom-0 left-0 right-0 lg:left-60 bg-white border-t border-gray-200 shadow-lg px-6 py-4 z-40">
             <div className="flex items-center justify-between max-w-4xl mx-auto">
@@ -494,7 +470,12 @@ export function ClientMenuPage() {
       </div>
 
       {showConfirm && (
-        <ConfirmModal cart={cart} onClose={() => setShowConfirm(false)} onSuccess={handleSuccess} />
+        <ConfirmModal
+          cart={cart}
+          allProducts={allProducts}
+          onClose={() => setShowConfirm(false)}
+          onSuccess={handleSuccess}
+        />
       )}
 
       {showSuccess && (

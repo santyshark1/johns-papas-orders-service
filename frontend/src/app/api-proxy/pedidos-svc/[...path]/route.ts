@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const PEDIDOS_BASE = 'https://pedidos-service-bwn3.onrender.com';
+const PEDIDOS_BASE = process.env.PEDIDOS_SERVICE_URL ?? 'http://localhost:8001';
 
 const STRIP_HEADERS = new Set(['content-encoding', 'transfer-encoding', 'connection', 'keep-alive']);
 

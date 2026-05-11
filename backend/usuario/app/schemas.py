@@ -106,6 +106,7 @@ class UsuarioResponse(BaseModel):
 	nombre: str | None
 	email: str | None
 	roles: list[str]
+	telefono: str | None = None
 
 	model_config = {
 		"json_schema_extra": {
@@ -202,6 +203,7 @@ class UsuarioUpdate(BaseModel):
 	email: EmailStr | None = None
 	password: str | None = None
 	roles: list[str] | None = None
+	telefono: str | None = None
 
 	@field_validator("email", mode="before")
 	@classmethod

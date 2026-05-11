@@ -1,229 +1,150 @@
-docker run -d \
-  --name postgres-local \
-  -e POSTGRES_USER=user \
-  -e POSTGRES_PASSWORD=jh0n_p4p4s_db \
-  -e POSTGRES_DB=pedidos \
-  -p 5432:5432 \
-  postgres:15
+-- WARNING: This schema is for context only and is not meant to be run.
+-- Table order and constraints may not be valid for execution.
 
----------------script
-
--- ============================================================
--- JOHN'S PAPAS — BASE DE DATOS UNIFICADA
--- DB: johns_papas_db
--- ============================================================
--- Extensión correcta para UUID
-CREATE EXTENSION IF NOT EXISTS "pgcrypto";
-
--- ============================================================
--- [1] PEDIDOS
--- ============================================================
-
-CREATE TABLE pedidos (
-    id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    numero_orden     VARCHAR(20) NOT NULL UNIQUE,
-
-    cliente_id       UUID        NOT NULL,
-    cliente_nombre   VARCHAR(255) NOT NULL,
-    cliente_email    VARCHAR(255) NOT NULL,
-    cliente_telefono VARCHAR(10)  NOT NULL,
-
-    tienda_id        UUID        NOT NULL,
-    tienda_nombre    VARCHAR(255) NOT NULL,
-
-    plataforma  VARCHAR(20) NOT NULL CHECK (plataforma IN ('WEB','MOVIL','TIENDA_FISICA')),
-    entrega     VARCHAR(20) NOT NULL CHECK (entrega IN ('DOMICILIO','RECOGIDA','RETIRO_TIENDA')),
-    estado      VARCHAR(20) NOT NULL DEFAULT 'BORRADOR'
-                CHECK (estado IN ('BORRADOR','EN_PROCESO','ENVIADO','ENTREGADO',
-                                  'CANCELADO','COMPLETADO','REEMBOLSADO','FALLIDO')),
-
-    subtotal    NUMERIC(10,2) NOT NULL CHECK (subtotal >= 0),
-    impuestos   NUMERIC(10,2) NOT NULL CHECK (impuestos >= 0),
-    servicio    NUMERIC(10,2) NOT NULL CHECK (servicio >= 0),
-    descuento   NUMERIC(10,2) NOT NULL DEFAULT 0 CHECK (descuento >= 0),
-    total       NUMERIC(10,2) NOT NULL CHECK (total >= 0),
-
-    creado_en   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+CREATE TABLE public.auditoria (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  usuario_id uuid,
+  accion character varying,
+  creado_en timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT auditoria_pkey PRIMARY KEY (id, creado_en)
 );
-
-CREATE TABLE items_pedido (
-    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    pedido_id   UUID NOT NULL REFERENCES pedidos(id) ON DELETE CASCADE,
-    producto_id VARCHAR(50) NOT NULL,
-    cantidad    INT NOT NULL CHECK (cantidad > 0),
-    precio_unit NUMERIC(10,2) NOT NULL,
-    total       NUMERIC(10,2) NOT NULL
+CREATE TABLE public.auditoria_2025 (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  usuario_id uuid,
+  accion character varying,
+  creado_en timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT auditoria_2025_pkey PRIMARY KEY (id, creado_en)
 );
-
--- ============================================================
--- [2] INVENTARIO
--- ============================================================
-
-CREATE TABLE ingredientes (
-    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    nombre        VARCHAR(150) NOT NULL,
-    stock_actual  NUMERIC(12,3) NOT NULL DEFAULT 0,
-    costo_unitario NUMERIC(10,4) NOT NULL DEFAULT 0
+CREATE TABLE public.direcciones_servicio (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  pedido_id uuid NOT NULL,
+  tipo character varying NOT NULL,
+  numero1 character varying NOT NULL,
+  numero2 character varying,
+  calle character varying NOT NULL,
+  ciudad character varying NOT NULL,
+  CONSTRAINT direcciones_servicio_pkey PRIMARY KEY (id),
+  CONSTRAINT direcciones_servicio_pedido_id_fkey FOREIGN KEY (pedido_id) REFERENCES public.pedidos(id)
 );
-
-CREATE TABLE movimientos_inventario (
-    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    ingrediente_id  UUID NOT NULL REFERENCES ingredientes(id),
-    tipo_movimiento VARCHAR(30) CHECK (tipo_movimiento IN ('ENTRADA','SALIDA','AJUSTE')),
-    cantidad        NUMERIC(12,3),
-    creado_en       TIMESTAMPTZ DEFAULT NOW()
+CREATE TABLE public.fact_inventario (
+  id bigint NOT NULL DEFAULT nextval('fact_inventario_id_seq'::regclass),
+  ingrediente_id uuid,
+  tipo_movimiento character varying CHECK (tipo_movimiento::text = ANY (ARRAY['ENTRADA'::character varying, 'SALIDA'::character varying, 'AJUSTE'::character varying]::text[])),
+  cantidad numeric,
+  creado_en timestamp with time zone,
+  CONSTRAINT fact_inventario_pkey PRIMARY KEY (id)
 );
-
--- ============================================================
--- [3] USUARIOS + ACCESOS
--- ============================================================
-
-CREATE TABLE roles (
-    id     UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    nombre VARCHAR(50) UNIQUE
+CREATE TABLE public.fact_ventas (
+  id bigint NOT NULL DEFAULT nextval('fact_ventas_id_seq'::regclass),
+  pedido_id uuid,
+  numero_orden character varying UNIQUE,
+  total numeric,
+  creado_en timestamp with time zone,
+  CONSTRAINT fact_ventas_pkey PRIMARY KEY (id)
 );
-
-CREATE TABLE usuarios (
-    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    nombre        VARCHAR(150),
-    email         VARCHAR(255) UNIQUE,
-    password_hash TEXT
+CREATE TABLE public.historial_estados_pedido (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  pedido_id uuid NOT NULL,
+  estado_anterior character varying NOT NULL,
+  estado_nuevo character varying NOT NULL,
+  cambiado_por character varying NOT NULL,
+  razon text NOT NULL DEFAULT ''::text,
+  cambiado_en timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT historial_estados_pedido_pkey PRIMARY KEY (id),
+  CONSTRAINT historial_estados_pedido_pedido_id_fkey FOREIGN KEY (pedido_id) REFERENCES public.pedidos(id)
 );
-
-CREATE TABLE usuario_roles (
-    usuario_id UUID REFERENCES usuarios(id) ON DELETE CASCADE,
-    rol_id     UUID REFERENCES roles(id),
-    tienda_id  UUID,
-    PRIMARY KEY (usuario_id, rol_id, tienda_id)
+CREATE TABLE public.ingredientes (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  nombre character varying NOT NULL,
+  stock_actual numeric NOT NULL DEFAULT 0,
+  costo_unitario numeric NOT NULL DEFAULT 0,
+  CONSTRAINT ingredientes_pkey PRIMARY KEY (id)
 );
-
-CREATE UNIQUE INDEX ux_usuario_roles
-ON usuario_roles (
-    usuario_id,
-    rol_id,
-    COALESCE(tienda_id, '00000000-0000-0000-0000-000000000000'::UUID)
+CREATE TABLE public.items_pedido (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  pedido_id uuid NOT NULL,
+  producto_id character varying NOT NULL,
+  cantidad integer NOT NULL CHECK (cantidad > 0),
+  precio_unitario_snapshot numeric NOT NULL,
+  total_item numeric NOT NULL,
+  nombre_producto_snapshot character varying NOT NULL DEFAULT ''::character varying,
+  sku_producto_snapshot character varying NOT NULL DEFAULT ''::character varying,
+  subtotal_snapshot numeric NOT NULL DEFAULT 0,
+  impuesto_item numeric NOT NULL DEFAULT 0,
+  descuento_item numeric NOT NULL DEFAULT 0,
+  variantes_json jsonb NOT NULL DEFAULT '{}'::jsonb,
+  notas text NOT NULL DEFAULT ''::text,
+  creado_en timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT items_pedido_pkey PRIMARY KEY (id),
+  CONSTRAINT items_pedido_pedido_id_fkey FOREIGN KEY (pedido_id) REFERENCES public.pedidos(id)
 );
-
--- Permisos
-CREATE TABLE permisos (
-    id     UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    codigo VARCHAR(100) UNIQUE
+CREATE TABLE public.movimientos_inventario (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  ingrediente_id uuid NOT NULL,
+  tipo_movimiento character varying CHECK (tipo_movimiento::text = ANY (ARRAY['ENTRADA'::character varying, 'SALIDA'::character varying, 'AJUSTE'::character varying]::text[])),
+  cantidad numeric,
+  creado_en timestamp with time zone DEFAULT now(),
+  CONSTRAINT movimientos_inventario_pkey PRIMARY KEY (id),
+  CONSTRAINT movimientos_inventario_ingrediente_id_fkey FOREIGN KEY (ingrediente_id) REFERENCES public.ingredientes(id)
 );
-
-CREATE TABLE rol_permisos (
-    rol_id     UUID,
-    permiso_id UUID REFERENCES permisos(id),
-    PRIMARY KEY (rol_id, permiso_id)
+CREATE TABLE public.opciones_seleccionadas_item_pedido (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  item_pedido_id uuid NOT NULL,
+  opcion_id character varying NOT NULL DEFAULT ''::character varying,
+  tipo_opcion_snapshot character varying NOT NULL,
+  codigo_opcion_snapshot character varying NOT NULL,
+  etiqueta_opcion_snapshot character varying NOT NULL,
+  CONSTRAINT opciones_seleccionadas_item_pedido_pkey PRIMARY KEY (id),
+  CONSTRAINT opciones_seleccionadas_item_pedido_item_pedido_id_fkey FOREIGN KEY (item_pedido_id) REFERENCES public.items_pedido(id)
 );
-
--- Auditoría (corregida para partición)
-CREATE TABLE auditoria (
-    id         UUID DEFAULT gen_random_uuid(),
-    usuario_id UUID,
-    accion     VARCHAR(100),
-    creado_en  TIMESTAMPTZ DEFAULT NOW(),
-    PRIMARY KEY (id, creado_en)
-) PARTITION BY RANGE (creado_en);
-
-CREATE TABLE auditoria_2025 PARTITION OF auditoria
-FOR VALUES FROM ('2025-01-01') TO ('2026-01-01');
-
--- ============================================================
--- [4] REPORTES
--- ============================================================
-
-CREATE TABLE fact_ventas (
-    id           BIGSERIAL PRIMARY KEY,
-    pedido_id    UUID,
-    numero_orden VARCHAR(20) UNIQUE,
-    total        NUMERIC(12,2),
-    creado_en    TIMESTAMPTZ
+CREATE TABLE public.pedidos (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  numero_orden character varying NOT NULL UNIQUE,
+  cliente_id uuid NOT NULL,
+  cliente_nombre character varying NOT NULL,
+  cliente_email character varying NOT NULL,
+  cliente_telefono character varying NOT NULL,
+  tienda_id uuid NOT NULL,
+  tienda_nombre character varying NOT NULL,
+  plataforma character varying NOT NULL CHECK (plataforma::text = ANY (ARRAY['WEB'::character varying, 'MOVIL'::character varying, 'TIENDA_FISICA'::character varying]::text[])),
+  entrega character varying NOT NULL CHECK (entrega::text = ANY (ARRAY['DOMICILIO'::character varying, 'RECOGIDA'::character varying, 'RETIRO_TIENDA'::character varying]::text[])),
+  estado character varying NOT NULL DEFAULT 'BORRADOR'::character varying CHECK (estado::text = ANY (ARRAY['BORRADOR'::character varying, 'EN_PROCESO'::character varying, 'ENVIADO'::character varying, 'ENTREGADO'::character varying, 'CANCELADO'::character varying, 'COMPLETADO'::character varying, 'REEMBOLSADO'::character varying, 'FALLIDO'::character varying]::text[])),
+  subtotal numeric NOT NULL CHECK (subtotal >= 0::numeric),
+  impuestos numeric NOT NULL CHECK (impuestos >= 0::numeric),
+  servicio numeric NOT NULL CHECK (servicio >= 0::numeric),
+  descuento numeric NOT NULL DEFAULT 0 CHECK (descuento >= 0::numeric),
+  total numeric NOT NULL CHECK (total >= 0::numeric),
+  creado_en timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT pedidos_pkey PRIMARY KEY (id)
 );
-
-CREATE TABLE fact_inventario (
-    id             BIGSERIAL PRIMARY KEY,
-    ingrediente_id UUID,
-    tipo_movimiento VARCHAR(30) CHECK (tipo_movimiento IN ('ENTRADA','SALIDA','AJUSTE')),
-    cantidad       NUMERIC(12,3),
-    creado_en      TIMESTAMPTZ
+CREATE TABLE public.permisos (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  codigo character varying UNIQUE,
+  CONSTRAINT permisos_pkey PRIMARY KEY (id)
 );
-
--- =========================
--- FIX PEDIDOS
--- =========================
-ALTER TABLE pedidos
-ADD COLUMN IF NOT EXISTS estado VARCHAR(20) NOT NULL DEFAULT 'BORRADOR'
-CHECK (estado IN ('BORRADOR','EN_PROCESO','ENVIADO','ENTREGADO',
-                  'CANCELADO','COMPLETADO','REEMBOLSADO','FALLIDO'));
-
--- =========================
--- FIX ITEMS_PEDIDO
--- =========================
-ALTER TABLE items_pedido
-RENAME COLUMN precio_unit TO precio_unitario_snapshot;
-
-ALTER TABLE items_pedido
-RENAME COLUMN total TO total_item;
-
-ALTER TABLE items_pedido
-ADD COLUMN IF NOT EXISTS nombre_producto_snapshot VARCHAR(200) NOT NULL DEFAULT '',
-ADD COLUMN IF NOT EXISTS sku_producto_snapshot VARCHAR(100) NOT NULL DEFAULT '',
-ADD COLUMN IF NOT EXISTS subtotal_snapshot NUMERIC(12,2) NOT NULL DEFAULT 0,
-ADD COLUMN IF NOT EXISTS impuesto_item NUMERIC(12,2) NOT NULL DEFAULT 0,
-ADD COLUMN IF NOT EXISTS descuento_item NUMERIC(12,2) NOT NULL DEFAULT 0,
-ADD COLUMN IF NOT EXISTS variantes_json JSONB NOT NULL DEFAULT '{}'::jsonb,
-ADD COLUMN IF NOT EXISTS notas TEXT NOT NULL DEFAULT '',
-ADD COLUMN IF NOT EXISTS creado_en TIMESTAMPTZ NOT NULL DEFAULT NOW();
-
--- =========================
--- DIRECCIONES_SERVICIO
--- =========================
-CREATE TABLE IF NOT EXISTS direcciones_servicio (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    pedido_id UUID NOT NULL REFERENCES pedidos(id) ON DELETE CASCADE,
-    tipo VARCHAR(20) NOT NULL,
-    numero1 VARCHAR(255) NOT NULL,
-    numero2 VARCHAR(255),
-    calle VARCHAR(255) NOT NULL,
-    ciudad VARCHAR(255) NOT NULL,
-    UNIQUE (pedido_id, tipo)
+CREATE TABLE public.rol_permisos (
+  rol_id uuid NOT NULL,
+  permiso_id uuid NOT NULL,
+  CONSTRAINT rol_permisos_pkey PRIMARY KEY (rol_id, permiso_id),
+  CONSTRAINT rol_permisos_permiso_id_fkey FOREIGN KEY (permiso_id) REFERENCES public.permisos(id)
 );
-
--- =========================
--- OPCIONES SELECCIONADAS
--- =========================
-CREATE TABLE IF NOT EXISTS opciones_seleccionadas_item_pedido (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    item_pedido_id UUID NOT NULL REFERENCES items_pedido(id) ON DELETE CASCADE,
-    opcion_id VARCHAR(50) NOT NULL DEFAULT '',
-    tipo_opcion_snapshot VARCHAR(50) NOT NULL,
-    codigo_opcion_snapshot VARCHAR(50) NOT NULL,
-    etiqueta_opcion_snapshot VARCHAR(100) NOT NULL
+CREATE TABLE public.roles (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  nombre character varying UNIQUE,
+  CONSTRAINT roles_pkey PRIMARY KEY (id)
 );
-
--- =========================
--- HISTORIAL ESTADOS
--- =========================
-CREATE TABLE IF NOT EXISTS historial_estados_pedido (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    pedido_id UUID NOT NULL REFERENCES pedidos(id) ON DELETE CASCADE,
-    estado_anterior VARCHAR(20) NOT NULL,
-    estado_nuevo VARCHAR(20) NOT NULL,
-    cambiado_por VARCHAR(50) NOT NULL,
-    razon TEXT NOT NULL DEFAULT '',
-    cambiado_en TIMESTAMPTZ NOT NULL DEFAULT NOW()
+CREATE TABLE public.usuario_roles (
+  usuario_id uuid NOT NULL,
+  rol_id uuid NOT NULL,
+  tienda_id uuid NOT NULL,
+  CONSTRAINT usuario_roles_pkey PRIMARY KEY (usuario_id, rol_id, tienda_id),
+  CONSTRAINT usuario_roles_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES public.usuarios(id),
+  CONSTRAINT usuario_roles_rol_id_fkey FOREIGN KEY (rol_id) REFERENCES public.roles(id)
 );
-
-CREATE INDEX IF NOT EXISTS ix_historial_pedido_cambiado_en
-ON historial_estados_pedido (pedido_id, cambiado_en);
-
-
-
-
-
-
-
-
-
-
-
+CREATE TABLE public.usuarios (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  nombre character varying,
+  email character varying UNIQUE,
+  password_hash text,
+  CONSTRAINT usuarios_pkey PRIMARY KEY (id)
+);

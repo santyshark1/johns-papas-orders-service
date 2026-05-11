@@ -5,7 +5,7 @@ import { EmployeeSidebar } from '../../components/EmployeeSidebar';
 import { EmployeeTopBar } from '../../components/EmployeeTopBar';
 import { Plus, Edit, Trash2, Search, User, X, RefreshCw, AlertCircle } from 'lucide-react';
 
-const USUARIO_API = 'https://usuario-service-7rbo.onrender.com';
+const USUARIO_API = '/api-proxy/usuario-svc';
 
 interface Empleado {
   id?: string;
@@ -18,13 +18,31 @@ interface Empleado {
   active?: boolean;
 }
 
+interface Role { id: string; nombre: string; }
+
+const DEFAULT_ROLES: Role[] = [
+  { id: '11edbcea-362e-4b21-8287-c75ce49f3adb', nombre: 'usuario' },
+  { id: '14815238-76f9-4078-b808-28cd5d8b7610', nombre: 'COCINA' },
+  { id: '67a8af0f-3c69-4f8f-9347-9ac1925b7239', nombre: 'Cajero' },
+  { id: 'd246fc50-c901-4700-81b9-01222392d9d6', nombre: 'Gerente' },
+  { id: 'e2aab718-f740-4c8a-8aa9-d715bf310051', nombre: 'Administrador' },
+  { id: 'e8bc6f1e-a92e-4178-bb6d-ae51984617c1', nombre: 'CAJERO' },
+  { id: 'fc004284-c35b-4cf6-8225-d9e3467667f5', nombre: 'ADMIN' },
+  { id: 'fcc303f8-01b0-4115-9dc2-d81035f27c1d', nombre: 'Cocinero' },
+];
+
+
 const roleColors: Record<string, string> = {
   admin: 'bg-purple-100 text-purple-800',
-  empleado: 'bg-blue-100 text-blue-800',
+  administrador: 'bg-purple-100 text-purple-800',
   cajero: 'bg-green-100 text-green-800',
+  gerente: 'bg-blue-100 text-blue-800',
+  cocina: 'bg-orange-100 text-orange-800',
+  cocinero: 'bg-orange-100 text-orange-800',
+  usuario: 'bg-gray-100 text-gray-700',
 };
 
-const emptyForm = { nombre: '', email: '', roles: 'empleado', telefono: '', password: '', confirmPassword: '' };
+const emptyForm = { nombre: '', email: '', roles: DEFAULT_ROLES[0].nombre, telefono: '', password: '', confirmPassword: '' };
 
 export function EmpleadosPage() {
   const [empleados, setEmpleados] = useState<Empleado[]>([]);
@@ -37,8 +55,19 @@ export function EmpleadosPage() {
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState('');
+  const [availableRoles, setAvailableRoles] = useState<Role[]>(DEFAULT_ROLES);
 
   function token() { return localStorage.getItem('token') ?? ''; }
+
+  async function loadRoles() {
+    const res = await fetch(`${USUARIO_API}/roles`, {
+      headers: { Authorization: `Bearer ${token()}` },
+    }).catch(() => null);
+    if (res?.ok) {
+      const data = await res.json().catch(() => null);
+      if (Array.isArray(data) && data.length) setAvailableRoles(data);
+    }
+  }
 
   async function load() {
     setLoading(true);
@@ -59,21 +88,22 @@ export function EmpleadosPage() {
     setLoading(false);
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); loadRoles(); }, []);
 
   function openAdd() {
     setEditingId(null);
-    setForm(emptyForm);
+    setForm({ ...emptyForm, roles: availableRoles[0]?.nombre ?? '' });
     setFormError('');
     setShowModal(true);
   }
 
   function openEdit(e: Empleado) {
+    const currentRole = e.roles?.[0] ?? availableRoles[0]?.nombre ?? '';
     setEditingId(e.id ?? e.email);
     setForm({
       nombre: e.nombre ?? e.name ?? '',
       email: e.email,
-      roles: e.roles?.[0] ?? 'empleado',
+      roles: currentRole,
       telefono: e.telefono ?? '',
       password: '',
       confirmPassword: '',
@@ -95,7 +125,10 @@ export function EmpleadosPage() {
       roles: [form.roles],
       telefono: form.telefono,
     };
-    if (form.password) body.password = form.password;
+    if (form.password) {
+      body.password = form.password;
+      body.confirm_password = form.password;
+    }
 
     let res: Response | null = null;
     if (editingId) {
@@ -117,7 +150,14 @@ export function EmpleadosPage() {
       load();
     } else {
       const data = await res?.json().catch(() => null);
-      setFormError(data?.detail ?? data?.message ?? 'Error al guardar');
+      const detail = data?.detail;
+      const msg =
+        typeof detail === 'string'
+          ? detail
+          : Array.isArray(detail)
+          ? detail.map((e: { msg?: string }) => e.msg ?? 'Error de validación').join(', ')
+          : data?.message ?? 'Error al guardar';
+      setFormError(msg);
     }
     setSaving(false);
   }
@@ -172,9 +212,9 @@ export function EmpleadosPage() {
             <select value={filterRole} onChange={e => setFilterRole(e.target.value)}
               className="px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-[#D4A017] focus:outline-none bg-white">
               <option value="Todos">Todos los roles</option>
-              <option value="admin">Admin</option>
-              <option value="empleado">Empleado</option>
-              <option value="cajero">Cajero</option>
+              {availableRoles.map(r => (
+                <option key={r.id} value={r.nombre}>{r.nombre}</option>
+              ))}
             </select>
           </div>
 
@@ -264,9 +304,9 @@ export function EmpleadosPage() {
                 <label className="block text-sm mb-1 text-[#5C3D1E]">Rol</label>
                 <select value={form.roles} onChange={e => setForm(p => ({ ...p, roles: e.target.value }))}
                   className="w-full px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-[#D4A017] focus:outline-none bg-[#FDF6EC]">
-                  <option value="admin">Admin</option>
-                  <option value="empleado">Empleado</option>
-                  <option value="cajero">Cajero</option>
+                  {availableRoles.map(r => (
+                    <option key={r.id} value={r.nombre}>{r.nombre}</option>
+                  ))}
                 </select>
               </div>
               <div>

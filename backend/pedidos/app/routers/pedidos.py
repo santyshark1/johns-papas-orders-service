@@ -336,6 +336,56 @@ async def obtener_pedido(
 	return _build_pedido_response(pedido)
 
 
+VALID_STATES = {"BORRADOR", "EN_PROCESO", "ENVIADO", "ENTREGADO", "CANCELADO", "COMPLETADO", "REEMBOLSADO", "FALLIDO"}
+
+
+@router.patch("/{pedido_id}/estado", response_model=PedidoResponse)
+async def actualizar_estado_pedido(
+	pedido_id: UUID,
+	payload: EstadoUpdateRequest,
+	current_user_id: str = Depends(get_current_user_id),
+	session: AsyncSession = Depends(get_db),
+) -> PedidoResponse:
+	"""Actualiza el estado de un pedido (uso interno por empleados/admin)."""
+	nuevo_estado = payload.estado.upper()
+	if nuevo_estado not in VALID_STATES:
+		raise HTTPException(
+			status_code=status.HTTP_400_BAD_REQUEST,
+			detail=f"Estado invalido. Valores permitidos: {', '.join(sorted(VALID_STATES))}",
+		)
+
+	pedido = await _load_pedido(session, pedido_id)
+	if not pedido:
+		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Pedido no encontrado")
+
+	if pedido.estado == nuevo_estado:
+		return _build_pedido_response(pedido)
+
+	estado_anterior = pedido.estado
+	pedido.estado = nuevo_estado
+	pedido.historial_estados.append(
+		HistorialEstadoPedido(
+			estado_anterior=estado_anterior,
+			estado_nuevo=nuevo_estado,
+			cambiado_por=current_user_id,
+			razon=payload.razon or "",
+		)
+	)
+
+	try:
+		await session.commit()
+		actualizado = await _load_pedido(session, pedido.id)
+		if not actualizado:
+			raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="No se pudo recuperar el pedido")
+		return _build_pedido_response(actualizado)
+	except HTTPException:
+		await session.rollback()
+		raise
+	except Exception as exc:
+		await session.rollback()
+		raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error al actualizar el estado") from exc
+
+
 @router.put("/{pedido_id}/cancelar", response_model=PedidoResponse)
 async def cancelar_pedido(
 	pedido_id: UUID,

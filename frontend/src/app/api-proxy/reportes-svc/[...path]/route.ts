@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const REPORTES_BASE = process.env.REPORTES_SERVICE_URL ?? 'https://reportes-service-zqc1.onrender.com';
+const REPORTES_BASE = process.env.REPORTES_SERVICE_URL ?? 'http://localhost:8003';
 const STRIP_HEADERS = new Set(['content-encoding', 'transfer-encoding', 'connection', 'keep-alive']);
 
 async function proxy(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {

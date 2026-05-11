@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const USUARIO_BASE = 'https://usuario-service-7rbo.onrender.com';
+const USUARIO_BASE = process.env.USUARIO_SERVICE_URL ?? 'http://localhost:8000';
 const STRIP_HEADERS = new Set(['content-encoding', 'transfer-encoding', 'connection', 'keep-alive']);
 
 async function proxy(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
