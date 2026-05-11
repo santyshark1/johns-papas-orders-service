@@ -363,14 +363,13 @@ async def actualizar_estado_pedido(
 
 	estado_anterior = pedido.estado
 	pedido.estado = nuevo_estado
-	pedido.historial_estados.append(
-		HistorialEstadoPedido(
-			estado_anterior=estado_anterior,
-			estado_nuevo=nuevo_estado,
-			cambiado_por=current_user_id,
-			razon=payload.razon or "",
-		)
-	)
+	session.add(HistorialEstadoPedido(
+		pedido_id=pedido.id,
+		estado_anterior=estado_anterior,
+		estado_nuevo=nuevo_estado,
+		cambiado_por=current_user_id,
+		razon=payload.razon or "",
+	))
 
 	try:
 		await session.commit()
